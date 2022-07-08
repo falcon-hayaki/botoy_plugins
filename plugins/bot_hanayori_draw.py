@@ -128,6 +128,7 @@ def draw_card(pic_chosen, title, text, from_user):
         y = int(image_font_center[1] - font_height / 2)
         draw.text((x, y), textVertical, fill = color, font = ttfront)
     # Save
+    os.system('mkdir -p {}/out'.format(resource_path))
     outPath = f'{resource_path}/out/{from_user}.png'
     img.save(outPath)
     return outPath

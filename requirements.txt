@@ -5,3 +5,6 @@ botoy
 pytz
 beautifulsoup4
 Pillow
+PicImageSearch
+pysaucenao
+numpy
