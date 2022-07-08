@@ -23,7 +23,7 @@ def receive_group_msg(ctx: GroupMsg):
             return
         if ctx.FromGroupId not in white_list:
             if ctx.Content in ["抽卡", "单抽", "十连", "十连抽"]:
-                m = "即日起全面禁抽，并提供戒抽服务。请加群: 183914156。如需添加你群至白名单请联系作者。"
+                m = "请加群: 183914156 联系作者添加你群至白名单。"
                 bot.sendGroupText(ctx.FromGroupId, content=m)
         elif "抽卡群" not in ctx.Content and ("抽卡" in ctx.Content or "单抽" in ctx.Content or "十连" in ctx.Content):
             roles = read_json(os.path.join(resource_path, "cards.json"))

@@ -15,6 +15,7 @@ bot_qq = 2798046422
 # 设置系统变量
 os.environ['BOTQQ'] = str(bot_qq)
 os.environ['cardSeed'] = str(random.randint(1, 1145141919))
+os.system('mkdir -p logs')
 
 bot = Botoy(
     qq = bot_qq,
@@ -72,9 +73,6 @@ if __name__ == "__main__":
     scheduler.add_job(timing.bili_dynamic, 'cron', minute='*/5', next_run_time=datetime.now())
     scheduler.add_job(timing.bili_live_alarm, 'cron', minute='*/5', next_run_time=datetime.now())
     scheduler.add_job(timing.draw_card_seed, 'cron', minute='*/10')
-    # scheduler.add_job(timing.danmu_monitor, 'cron', minute='*/10')
-#     scheduler.add_job(timing.danmu_send, 'cron', minute='*/10')
-#     scheduler.add_job(timing.uu_reminder, 'cron', hour='*/1')
 
     scheduler.add_listener(job_max_instances_listener, EVENT_JOB_MAX_INSTANCES)
     scheduler._logger = logging

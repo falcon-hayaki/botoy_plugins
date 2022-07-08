@@ -34,7 +34,7 @@ def receive_group_msg(ctx: GroupMsg):
     if ctx.MsgType == 'TextMsg':
         if ctx.Content[:4] in ['方舟抽卡', '方舟十连']:
             if ctx.FromGroupId not in white_list:
-                m = "即日起全面禁抽，并提供戒抽服务。请加群: 183914156。如需添加你群至白名单请联系作者。"
+                m = "请加群: 183914156 联系作者添加你群至白名单。"
                 bot.sendGroupText(ctx.FromGroupId, content=m)
                 return
             method = ctx.Content[2:4]
