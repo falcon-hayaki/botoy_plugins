@@ -7,6 +7,8 @@ import random
 import datetime
 import base64
 
+from utils.fileio import read_json, write_json, picToBase64
+
 resource_path = "./resources/hanayori_draw"
 
 bot = Action(
@@ -17,10 +19,8 @@ bot = Action(
 def receive_group_msg(ctx: GroupMsg):
     if ctx.MsgType == 'TextMsg':
         if ctx.Content in ['抽签', '抽签签', '我的回合，抽签', '我的回合，抽签！']:
-            with open(os.path.join(resource_path, "fortune/copywriting.json"), 'rb') as f:
-                texts = json.load(f)
-            with open(os.path.join(resource_path, "fortune/goodLuck.json"), 'rb') as f:
-                titles = json.load(f)
+            texts = read_json(os.path.join(resource_path, "fortune/copywriting.json"))
+            titles = read_json(os.path.join(resource_path, "fortune/goodLuck.json"))
             date_list = str(datetime.date.today()).split(sep='-')
             seed = ''
             for date in date_list:
@@ -56,9 +56,7 @@ def receive_group_msg(ctx: GroupMsg):
                 else:
                     goodLuck = f'{resource_path}/fortune/goodLuck.json'
                     copywrighting = f'{resource_path}/fortune/copywriting.json'
-                    with open(goodLuck, 'rb') as f:
-                        lucks = json.load(f)
-                        f.close()
+                    lucks = read_json(goodLuck)
                     m1s = []
                     for luck in lucks["types_of"]:
                         m1s.append(luck["name"])
@@ -68,15 +66,12 @@ def receive_group_msg(ctx: GroupMsg):
                         errflag = "事件不能超过36字"
                     else:
                         if ctx.FromGroupId == 1014696092:
-                            with open(copywrighting, 'rb') as f:
-                                cw = json.load(f)
-                                f.close()
+                            cw = read_json(copywrighting)
                             new_cw = {}
                             new_cw["good-luck"] = lucks["types_of"][m1s.index(args[0])]["good-luck"]
                             new_cw["content"] = args[1]
                             cw["copywriting"].append(new_cw)
-                            with open(copywrighting, 'w') as f:
-                                json.dump(cw, f)
+                            write_json(copywrighting, cw)
                             bot.sendGroupText(ctx.FromGroupId, "已添加")
                         else:
                             m = f'来自{ctx.FromGroupName}({ctx.FromGroupId})的{ctx.FromNickName}({ctx.FromUserId})提交的签\n添加签 {args[0]} {args[1]}'
@@ -87,9 +82,7 @@ def receive_group_msg(ctx: GroupMsg):
             else:
                 goodLuck = f'{resource_path}/fortune/goodLuck.json'
                 copyrighting = f'{resource_path}/fortune/copywriting.json'
-                with open(goodLuck, 'rb') as f:
-                    lucks = json.load(f)
-                    f.close()
+                lucks = read_json(goodLuck)
                 m1s = []
                 for luck in lucks["types_of"]:
                     m1s.append(luck["name"])
@@ -99,11 +92,6 @@ def receive_group_msg(ctx: GroupMsg):
                 m = m[:-1]
                 m += "\n2. 事件不能超过36个字\n3. 格式：添加签 运势 事件；如：添加签 仕事運 适合在家打一整天轴；注：繁简体敏感\n4. 并不是立即添加而是提交审核，最终解释权归falcon所有。"
                 bot.sendGroupText(ctx.FromGroupId, m)
-
-def picToBase64(pic_path):
-    with open(pic_path, 'rb') as f:
-        pic = f.read()
-    return str(base64.b64encode(pic), encoding = 'utf-8')
 
 def draw_card(pic_chosen, title, text, from_user):
     fontPath = {

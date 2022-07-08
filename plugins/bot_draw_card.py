@@ -4,6 +4,8 @@ import os
 import json
 import random
 
+from utils.fileio import read_json, write_json
+
 resource_path = "./resources/draw_card"
 
 bot = Action(
@@ -11,11 +13,8 @@ bot = Action(
 )
 
 cardpool = ["R"] * 789 + ["SR"] * 200 + ["SSR"] * 10 + ["SP"] * 1 + ["N"] * 10
-with open(os.path.join(resource_path, 'slow_mode.json'), "rb") as load_f:
-    slow_data = json.load(load_f)
-
-with open(os.path.join(resource_path, 'white_list.json'), "rb") as load_f:
-    white_list = json.load(load_f)
+slow_data = read_json(os.path.join(resource_path, "slow_mode.json"))
+white_list = read_json(os.path.join(resource_path, "white_list.json"))
 
 @deco.ignore_botself
 def receive_group_msg(ctx: GroupMsg):
@@ -27,8 +26,7 @@ def receive_group_msg(ctx: GroupMsg):
                 m = "即日起全面禁抽，并提供戒抽服务。请加群: 183914156。如需添加你群至白名单请联系作者。"
                 bot.sendGroupText(ctx.FromGroupId, content=m)
         elif "抽卡群" not in ctx.Content and ("抽卡" in ctx.Content or "单抽" in ctx.Content or "十连" in ctx.Content):
-            with open(os.path.join(resource_path, 'cards.json'), "rb") as load_f:
-                roles = json.load(load_f)
+            roles = read_json(os.path.join(resource_path, "cards.json"))
                 
             if ctx.FromGroupId in slow_data["groups"]:
                 slow_mode(ctx)
@@ -74,14 +72,12 @@ def receive_group_msg(ctx: GroupMsg):
         
 
 def add_to_pool(ctx, rarity, name):
-    with open(os.path.join(resource_path, 'cards.json'), "rb") as load_f:
-        roles = json.load(load_f)
+    roles = read_json(os.path.join(resource_path, "cards.json"))
     if rarity in roles:
         if name not in roles[rarity]:
             if ctx.FromGroupId == 1014696092:
                 roles[rarity].append(name)
-                with open(os.path.join(resource_path, 'cards.json'), "w") as f:
-                    json.dump(roles, f)
+                write_json(os.path.join(resource_path, 'cards.json'), roles)
                 bot.sendGroupText(ctx.FromGroupId, content="添加成功")
             else:
                 m = f"卡池添加申请：\n{rarity}\t{name}\nfromGroup:{ctx.FromGroupName}\nfromUser:{ctx.FromNickName}\n添加卡 {rarity} {name}"
@@ -94,8 +90,7 @@ def add_to_pool(ctx, rarity, name):
 
 def slow_mode(ctx):
     current_seed = int(os.getenv('cardSeed'))
-    with open(os.path.join(resource_path, 'cards.json'), "rb") as load_f:
-        roles = json.load(load_f)
+    roles = read_json(os.path.join(resource_path, "cards.json"))
 
     if slow_data["seed"] != current_seed:
         slow_data["seed"] = current_seed
@@ -136,8 +131,7 @@ def slow_mode(ctx):
             msg += selection + "\t" + random.choice(roles[selection]) + "\n"
         bot.sendGroupText(ctx.FromGroupId, content=msg)
 
-    with open(os.path.join(resource_path, 'slow_mode.json'), "w") as f:
-        json.dump(slow_data, f)
+    write_json(os.path.join(resource_path, 'slow_mode.json'), slow_data)
 
 def IsMsgFromBot(QQid):
     if QQid in [2578353087]:

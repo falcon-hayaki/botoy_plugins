@@ -4,6 +4,8 @@ import os
 import json
 import requests, time
 
+from utils.fileio import read_json, write_json
+
 resource_path = "./resources/bili_dynamic"
 
 bot = Action(
@@ -14,9 +16,7 @@ bot = Action(
 def receive_group_msg(ctx: GroupMsg):
     if ctx.MsgType == "TextMsg":
         if ctx.Content == "查看关注":
-            with open(os.path.join(resource_path, "subscribes_list.json"), "rb") as f:
-                subscribes = json.load(f)
-                f.close()
+            subscribes = read_json(os.path.join(resource_path, "subscribes_list.json"))
             sub_list = []
             for uid in subscribes:
                 if ctx.FromGroupId in subscribes[uid]['groups']:
@@ -50,9 +50,7 @@ def receive_group_msg(ctx: GroupMsg):
                 elif info["code"] == -412:
                     bot.sendGroupText(ctx.FromGroupId, "牙白！服务器被阿b风控了！")
                 elif info["code"] == 0:
-                    with open(os.path.join(resource_path, "subscribes_list.json"), "rb") as f:
-                        subscribes = json.load(f)
-                        f.close()
+                    subscribes = read_json(os.path.join(resource_path, "subscribes_list.json"))
                     uname = info['data']['name']
                     if action == "关注":
                         if uid in subscribes:
@@ -79,9 +77,7 @@ def receive_group_msg(ctx: GroupMsg):
                                 del subscribes[uid]
                             t = f"你已取消关注{uname}"
                             bot.sendGroupText(ctx.FromGroupId, t)
-                    with open(os.path.join(resource_path, "subscribes_list.json"), "w") as f:
-                        json.dump(subscribes, f)
-                        f.close()
+                    write_json(os.path.join(resource_path, "subscribes_list.json"), subscribes)
 
 def get_up_info(uid):
     url = f"https://api.bilibili.com/x/space/acc/info?mid={uid}&jsonp=jsonp"

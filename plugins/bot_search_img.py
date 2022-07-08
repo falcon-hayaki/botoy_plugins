@@ -7,6 +7,8 @@ from PicImageSearch import Ascii2D
 import asyncio
 import requests
 
+from utils.fileio import write_pic
+
 resource_path = "./resources/search_img"
 
 bot = Action(
@@ -21,9 +23,7 @@ def receive_group_msg(ctx: GroupMsg):
             ctx.Content = json.loads(ctx.Content)
             url = ctx.Content['GroupPic'][0]['Url']
             imgdata = requests.get(url).content
-            with open(os.path.join(resource_path, 'img.jpg'), 'wb') as f:
-                f.write(imgdata)
-                f.close()
+            write_pic(os.path.join(resource_path, 'img.jpg'), imgdata)
             loop = asyncio.new_event_loop()
             asyncio.set_event_loop(loop)
             loop.run_until_complete(get_img_source(ctx.FromGroupId, file=os.path.join(resource_path, 'img.jpg')))

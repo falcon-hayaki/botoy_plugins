@@ -1,3 +1,4 @@
+from asyncore import write
 from botoy import Botoy, Action, GroupMsg
 from botoy import decorators as deco
 import os
@@ -7,6 +8,8 @@ import re
 import numpy as np
 import copy
 
+from utils.fileio import read_json, write_json
+
 resource_path_conf = "./resources/draw_card"
 resource_path = "./resources/arknights_draw"
 
@@ -14,11 +17,8 @@ bot = Action(
     qq = int(os.getenv('BOTQQ'))
 )
 
-with open(os.path.join(resource_path_conf, 'slow_mode.json'), "rb") as load_f:
-    slow_data = json.load(load_f)
-
-with open(os.path.join(resource_path_conf, 'white_list.json'), "rb") as load_f:
-    white_list = json.load(load_f)
+slow_data = read_json(os.path.join(resource_path_conf, 'slow_mode.json'))
+white_list = read_json(os.path.join(resource_path_conf, 'white_list.json'))
 
 LEVEL = ['ssr', 'sr', 'r', 'n']
 
@@ -44,8 +44,7 @@ def receive_group_msg(ctx: GroupMsg):
             if content:
                 args = content.split()
                 if '-i' in args:
-                    with open(os.path.join(resource_path, 'user_data.json'), "rb") as load_f:
-                        user_data = json.load(load_f)
+                    user_data = read_json(os.path.join(resource_path, 'user_data.json'))
                     if str(ctx.FromUserId) not in user_data:
                         user_data[str(ctx.FromUserId)] = dict(total_draw=0, last_ssr=0, history=dict(ssr=0, sr=0, r=0, n=0, detail=dict()))
                     user = user_data[str(ctx.FromUserId)]
@@ -60,12 +59,10 @@ def receive_group_msg(ctx: GroupMsg):
                     bot.sendGroupText(ctx.FromGroupId, content=m)
                     return
                 if '--remake' in args:
-                    with open(os.path.join(resource_path, 'user_data.json'), "rb") as load_f:
-                        user_data = json.load(load_f)
+                    user_data = read_json(os.path.join(resource_path, 'user_data.json'))
                     if str(ctx.FromUserId) in user_data:
                         del user_data[str(ctx.FromUserId)]
-                    with open(os.path.join(resource_path, 'user_data.json'), "w") as f:
-                        json.dump(user_data, f)
+                    write_json(os.path.join(resource_path, 'user_data.json'), user_data)
                     m = '你已remake'
                     bot.sendGroupText(ctx.FromGroupId, content=m)
                     return
@@ -81,13 +78,11 @@ def receive_group_msg(ctx: GroupMsg):
                     return
                 if '-up' in args:
                     up = args[args.index('-up')+1:]
-            with open(os.path.join(resource_path, 'user_data.json'), "rb") as load_f:
-                user_data = json.load(load_f)
+            user_data = read_json(os.path.join(resource_path, 'user_data.json'))
             if str(ctx.FromUserId) not in user_data:
                 user_data[str(ctx.FromUserId)] = dict(total_draw=0, last_ssr=0, history=dict(ssr=0, sr=0, r=0, n=0, detail=dict()))
             user = user_data[str(ctx.FromUserId)]
-            with open(os.path.join(resource_path, 'pool.json'), "rb") as load_f:
-                pool = json.load(load_f)
+            pool = read_json(os.path.join(resource_path, 'pool.json'))
             pool = pool[use_pool] if use_pool in pool else pool['common']
             rate = pool['rate']
             if method == '抽卡':
@@ -142,8 +137,7 @@ def receive_group_msg(ctx: GroupMsg):
                 m += '当前六星概率: {}'.format(rate['ssr'])
                 bot.sendGroupText(ctx.FromGroupId, content=m)
             user_data[str(ctx.FromUserId)] = user
-            with open(os.path.join(resource_path, 'user_data.json'), "w") as f:
-                json.dump(user_data, f)
+            write_json(os.path.join(resource_path, 'user_data.json'), user_data)
 
 def draw_one(pool, rate, up):
     p = []

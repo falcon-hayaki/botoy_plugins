@@ -7,6 +7,8 @@ from io import BytesIO
 import requests as req
 import base64
 
+from utils.fileio import read_json, write_json, picToBase64
+
 resource_path = "./resources/img_text"
 
 bot = Action(
@@ -83,8 +85,3 @@ def addTextInFrame(frame, text):
     del draw
 
     return bg
-
-def picToBase64(pic_path):
-    with open(pic_path, 'rb') as f:
-        pic = f.read()
-    return str(base64.b64encode(pic), encoding = 'utf-8')

@@ -1,9 +1,12 @@
+import imp
 from botoy import Botoy, Action, GroupMsg
 from botoy import decorators as deco
 import os
 import json
 import re
 import random
+
+from utils.fileio import read_json, write_json
 
 resource_path = "./resources/reply"
 
@@ -13,8 +16,7 @@ bot = Action(
 
 data = dict()
 
-with open(os.path.join(resource_path, 'data.json'), "rb") as load_f:
-    data = json.load(load_f)
+data = read_json(os.path.join(resource_path, 'data.json'))
 
 @deco.ignore_botself
 def receive_group_msg(ctx: GroupMsg):
@@ -36,12 +38,10 @@ def receive_group_msg(ctx: GroupMsg):
         elif ctx.Content in ['!clear', '！clear', '！清空', '!清空']:
             if groupid in data:
                 data[groupid].clear()
-                with open(os.path.join(resource_path, 'data.json'), "w") as f:
-                    json.dump(data, f)
+                write_json(os.path.join(resource_path, 'data.json'), data)
             bot.sendGroupText(ctx.FromGroupId, content="已清空")
         elif ctx.Content in ["!list", "！list"]:
-            with open(os.path.join(resource_path, 'data.json'), "rb") as load_f:
-                data = json.load(load_f)
+            data = read_json(os.path.join(resource_path, 'data.json'))
             if groupid not in data or not data[groupid]:
                 bot.sendGroupText(ctx.FromGroupId, content="列表为空")
             else:
@@ -53,8 +53,7 @@ def receive_group_msg(ctx: GroupMsg):
                         count += 1
                 bot.sendGroupText(ctx.FromGroupId, content=m)
         elif re.match("说.{1,}答.{1,}", ctx.Content) is not None:
-            with open(os.path.join(resource_path, 'data.json'), "rb") as load_f:
-                data = json.load(load_f)
+            data = read_json(os.path.join(resource_path, 'data.json'))
             key = ctx.Content[1:2+ctx.Content[2:].index("答")].strip()
             value = ctx.Content[3+ctx.Content[2:].index("答"):].strip()
             if groupid not in data:
@@ -66,12 +65,10 @@ def receive_group_msg(ctx: GroupMsg):
             else:
                 data[groupid][key].append(value)
                 m = f"已添加: key={key}, value={value}"
-                with open(os.path.join(resource_path, 'data.json'), "w") as f:
-                    json.dump(data, f)
+                write_json(os.path.join(resource_path, 'data.json'), data)
             bot.sendGroupText(ctx.FromGroupId, content=m)
         elif re.match("(?:!|！)(?:删除|del)[ ]+[0-9 ]+$", ctx.Content) is not None:
-            with open(os.path.join(resource_path, 'data.json'), "rb") as load_f:
-                data = json.load(load_f)
+            data = read_json(os.path.join(resource_path, 'data.json'))
             del_list = ctx.Content.strip().split()[1:]
             if groupid not in data:
                 data[groupid] = dict()
@@ -92,8 +89,7 @@ def receive_group_msg(ctx: GroupMsg):
                         count += 1
                 for key in key_to_del:
                     del data[groupid][key]
-                with open(os.path.join(resource_path, 'data.json'), "w") as f:
-                    json.dump(data, f)
+                write_json(os.path.join(resource_path, 'data.json'), data)
                 bot.sendGroupText(ctx.FromGroupId, content=m)
         elif groupid in data:
             matched = []

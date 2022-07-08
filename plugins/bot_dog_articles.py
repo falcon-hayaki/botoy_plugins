@@ -4,22 +4,22 @@ import os
 import json
 import random
 
+from utils.fileio import read_json
+
 bot = Action(
     qq = int(os.getenv('BOTQQ'))
 )
 
 resource_path = "./resources/dog_articles"
 
-with open(os.path.join(resource_path, 'white_list.json'), "rb") as load_f:
-    white_list = json.load(load_f)
+white_list = read_json(os.path.join(resource_path, "white_list.json"))
 
 @deco.ignore_botself
 def receive_group_msg(ctx: GroupMsg):
     if ctx.MsgType == 'TextMsg':
         if ctx.Content.strip().split()[0] == '定型文':
             if ctx.FromGroupId in white_list:
-                with open(os.path.join(resource_path, 'data.json'), 'rb') as f:
-                    l = json.load(f)
+                l = read_json(os.path.join(resource_path, "data.json"))
                 name = (len(ctx.Content.strip().split()) == 1 and '你是谁来着' or ctx.Content.strip().split()[1])
                 article = random.choice(l)
                 article = article.replace("{name_to_replace}", name)

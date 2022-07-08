@@ -4,6 +4,8 @@ import os
 import json
 import time
 
+from utils.fileio import read_json, write_json
+
 resource_path = "./resources/pigeon"
 
 bot = Action(
@@ -11,13 +13,8 @@ bot = Action(
     timeout=200
 )
 
-with open(os.path.join(resource_path, "group_list.json"), "rb") as f:
-    groups = json.load(f)
-    f.close()
-
-with open(os.path.join(resource_path, "ban_list.json"), "rb") as f:
-    bans = json.load(f)
-    f.close()
+groups = read_json(os.path.join(resource_path, "group_list.json"))
+bans = read_json(os.path.join(resource_path, "ban_list.json"))
 
 
 @deco.ignore_botself

@@ -6,6 +6,7 @@ import os
 import random
 from datetime import datetime
 from bot import action
+from utils.fileio import read_json, write_json
 
 class Timing():
     def __init__(self):
@@ -186,12 +187,8 @@ class Timing():
 
         resource_path = "resources/bili_dynamic"
 
-        with open(os.path.join(resource_path, "subscribes_list.json"), 'rb') as f:
-            subscribes = json.load(f)
-            f.close()
-        with open(os.path.join(resource_path, "dynamic_data.json"), 'rb') as f:
-            data = json.load(f)
-            f.close()
+        subscribes = read_json(os.path.join(resource_path, "subscribes_list.json"))
+        data = read_json(os.path.join(resource_path, "dynamic_data.json"))
 
         self.bili_dynamic_subnum = len(subscribes)
 
@@ -210,9 +207,7 @@ class Timing():
         for uid in uid_to_del:
             del data[uid]
         
-        with open(os.path.join(resource_path, "dynamic_data.json"), 'w') as f:
-            json.dump(data, f)
-            f.close()
+        write_json(os.path.join(resource_path, "dynamic_data.json"), data)
 
     def bili_live_alarm(self):
         def get_live_status(room_id):
@@ -277,6 +272,9 @@ class Timing():
                     status[roomid]["status"] = current_status
                     status[roomid]["title"] = title
                     status[roomid]["img"] = img
+                    status[roomid]["start_time"] = str(datetime.now(tz=pytz.timezone("Asia/Shanghai")))
+                    status[roomid]["end_time"] = ''
+                    status[roomid]['checkpoints'] = []
                     for group in subscribes[roomid]['groups']:
                         url = f"https://live.bilibili.com/{roomid}"
                         t = f"{status[roomid]['uname']}开播了！\n标题：{title}\n{url}"
@@ -287,76 +285,46 @@ class Timing():
                         }
                         self.msg_queue.append(m)
 
-                    with open("resources/bili_live_checkpoint/subscribes.json", 'rb') as f:
-                        checkpoints = json.load(f)
-                    if roomid in checkpoints:
-                        checkpoints[roomid]["status"] = 1
-                        checkpoints[roomid]["title"] = title
-                        checkpoints[roomid]["start_time"] = str(datetime.now(tz=pytz.timezone("Asia/Shanghai")))
-                        with open("resources/bili_live_checkpoint/subscribes.json", 'w') as f:
-                            json.dump(checkpoints, f)
-
                 elif current_status == 0:
                     status[roomid]["status"] = current_status
-                    status[roomid]["title"] = ""
-                    status[roomid]["img"] = ""
-
-                    with open("resources/bili_live_checkpoint/subscribes.json", 'rb') as f:
-                        checkpoints = json.load(f)
-                    if roomid in checkpoints:
-                        checkpoints[roomid]["status"] = 0
-                        checkpoints[roomid]["end_time"] = str(datetime.now(tz=pytz.timezone("Asia/Shanghai")))
-                        with open("resources/bili_live_checkpoint/subscribes.json", 'w') as f:
-                            json.dump(checkpoints, f)
-
-                        with open("resources/bili_live_checkpoint/checkpoints.json", 'rb') as f:
-                            checkpoints_data = json.load(f)
-                        if roomid not in checkpoints_data:
-                            checkpoints_data[roomid] = []
-                        try:
-                            start_time = datetime.strptime(str(checkpoints[roomid]["start_time"])[:-6], "%Y-%m-%d %H:%M:%S.%f")
-                            end_time = datetime.strptime(str(checkpoints[roomid]["end_time"])[:-6], "%Y-%m-%d %H:%M:%S.%f")
-                            t = f'{checkpoints[roomid]["title"]}已结束，开始时间：{checkpoints[roomid]["start_time"]}， 结束时间：{checkpoints[roomid]["end_time"]}\n剪辑点：\n'
-                            if checkpoints_data[roomid]:
-                                for data in checkpoints_data[roomid]:
-                                    check_time = datetime.strptime(str(data["time"])[:-6], "%Y-%m-%d %H:%M:%S.%f")
-                                    if check_time > end_time or check_time < start_time:
-                                        m = {
-                                            "group": 1014696092,
-                                            "text": "时空遭到逆转",
-                                        }
-                                        self.msg_queue.append(m)
-                                    else:
-                                        t += str(check_time - start_time) + "\t" + data["text"] + "\n"
-                            else:
-                                t += "无"
-                            for group in checkpoints[roomid]["groups"]:
-                                m = {
-                                    "group": group,
-                                    "text": t,
-                                }
-                                self.msg_queue.append(m)
-                        except Exception as e:
-                            t = f"checkpoint功能故障，房间号: {roomid}\n{e}"
+                    status[roomid]["end_time"] = str(datetime.now(tz=pytz.timezone("Asia/Shanghai")))
+                    try:
+                        start_time = datetime.strptime(str(status[roomid]["start_time"])[:-6], "%Y-%m-%d %H:%M:%S.%f")
+                        end_time = datetime.strptime(str(status[roomid]["end_time"])[:-6], "%Y-%m-%d %H:%M:%S.%f")
+                        t = f'{status[roomid]["title"]}已结束，开始时间：{status[roomid]["start_time"]}， 结束时间：{status[roomid]["end_time"]}'
+                        if 'checkpoints' in status[roomid]:
+                            t += '\n剪辑点：\n'
+                            for data in status[roomid]['checkpoints']:
+                                check_time = datetime.strptime(str(data["time"])[:-6], "%Y-%m-%d %H:%M:%S.%f")
+                                if check_time > end_time or check_time < start_time:
+                                    m = {
+                                        "group": 1014696092,
+                                        "text": "时空遭到逆转",
+                                    }
+                                    self.msg_queue.append(m)
+                                else:
+                                    t += str(check_time - start_time) + "\t" + data["text"] + "\n"
+                        else:
+                            pass
+                        for group in subscribes[roomid]['groups']:
                             m = {
-                                "group": 1014696092,
+                                "group": group,
                                 "text": t,
                             }
                             self.msg_queue.append(m)
-                        checkpoints_data[roomid] = []
-                        with open("resources/bili_live_checkpoint/checkpoints.json", 'w') as f:
-                            json.dump(checkpoints_data, f)
-
+                    except Exception as e:
+                        t = f"checkpoint功能故障，房间号: {roomid}\n{e}"
+                        m = {
+                            "group": 1014696092,
+                            "text": t,
+                        }
+                        self.msg_queue.append(m)
             return status
 
         resource_path = "resources/bili_live_alarm"
 
-        with open(os.path.join(resource_path, "subscribes.json"), 'rb') as f:
-            subscribes = json.load(f)
-            f.close()
-        with open(os.path.join(resource_path, "bili_live_status.json"), 'rb') as f:
-            status = json.load(f)
-            f.close()
+        subscribes = read_json(os.path.join(resource_path, "subscribes.json"))
+        status = read_json(os.path.join(resource_path, "bili_live_status.json"))
 
         for roomid in subscribes:
             if roomid not in status:
@@ -370,168 +338,10 @@ class Timing():
         for roomid in roomid_to_del:
             del status[roomid]
 
-        with open(os.path.join(resource_path, "bili_live_status.json"), 'w') as f:
-            json.dump(status, f)
-            f.close()
+        write_json(os.path.join(resource_path, "bili_live_status.json"), status)
 
     def draw_card_seed(self):
         seed = str(random.randint(1, 1145141919))
         print("current seed:")
         print(seed)
         os.environ['cardSeed'] = seed
-
-    def danmu_monitor(self):
-        def api_viewer(uid):
-            url = f"https://api.neeemooo.com/viewer/{uid}"
-            headers = {"origin": "https://matsuri.icu"}
-            return json.loads(requests.get(url, headers = headers).text)
-
-        def check_new(uid, data, subscribes):
-            current = api_viewer(uid)
-            if current["status"] == 0:
-                current_data = current["data"]
-                print("正在监听")
-                print(current_data[0]["full_comments"][0]["username"])
-                if not data[uid]:
-                    data[uid] = current_data
-                else:
-                    for card in current_data:
-                        if card not in data[uid]:
-                            print("\ntest\n")
-                            count = 0
-                            t = f'{card["full_comments"][0]["username"]}曾出现在{card["clip_info"]["name"]}的直播 {card["clip_info"]["title"]} 中：\n'
-                            for comment in card["full_comments"]:
-                                l = ""
-                                if "text" in comment:
-                                    if "superchat_price" in comment:
-                                        l += "sc: "
-                                    l += comment["text"]
-                                    l += "\n"
-                                elif "gift_name" in comment:
-                                    l += "送出" + comment["gift_name"] + " x" + str(comment["gift_num"]) + "\n"
-                                t += l
-                                count += 1
-                                if count == 5:
-                                    for group in subscribes[uid]["groups"]:
-                                        m = {
-                                            "group": group,
-                                            "text": t[:-1]
-                                        }
-                                        self.msg_queue.append(m)
-                                        count = 0
-                                        t = ""
-                            if t:
-                                for group in subscribes[uid]["groups"]:
-                                    m = {
-                                        "group": group,
-                                        "text": t[:-1]
-                                    }
-                                    self.msg_queue.append(m)
-                                    count = 0
-                                    t = ""
-                    data[uid] = current_data
-            else:
-                action.sendGroupText(1014696092, "danmu monitor API异常")
-
-            return data
-
-        resource_path = "resources/danmu_monitor"
-
-        with open(os.path.join(resource_path, "subscribes.json"), 'rb') as f:
-            subscribes = json.load(f)
-            f.close()
-        with open(os.path.join(resource_path, "danmu_data.json"), 'rb') as f:
-            data = json.load(f)
-            f.close()
-
-        for uid in subscribes:
-            if uid not in data:
-                data[uid] = []
-            data = check_new(uid, data, subscribes)
-
-        roomid_to_del = []
-        for roomid in data:
-            if roomid not in subscribes:
-                roomid_to_del.append(roomid)
-        for roomid in roomid_to_del:
-            del data[roomid]
-
-        with open(os.path.join(resource_path, "danmu_data.json"), 'w') as f:
-            json.dump(data, f)
-            f.close()
-
-    def danmu_send(self):
-        def send(room_id, msg):
-            url = 'https://api.live.bilibili.com/msg/send'
-            data = {
-                'color': '16777215',
-                'fontsize': '25',
-                'mode': '1',
-                'msg': msg,
-                'rnd': str(int(time.time())),
-                'roomid': room_id,
-                'bubble': '0',
-                'csrf_token': 'bc3ca64a45fc9ffe0982b5feba119bc1',
-                'csrf': 'bc3ca64a45fc9ffe0982b5feba119bc1'
-            }
-            headers = {
-                'cookie': "LIVE_BUVID=AUTO2716217597445981; _uuid=E57517E3-9B52-D19B-8B5A-6081CF0A2C3A49256infoc; buvid3=4774D9E8-9613-4482-B998-662551DD6D2A13412infoc; buvid_fp=4774D9E8-9613-4482-B998-662551DD6D2A13412infoc; buvid_fp_plain=4774D9E8-9613-4482-B998-662551DD6D2A13412infoc; CURRENT_FNVAL=80; blackside_state=1; rpdid=|(u)lukuYYJ~0J'uYkk))|kmJ; fingerprint=6fc5b3a08534cdd60c03bad6c6b13a83; SESSDATA=59e52819%2C1642557719%2Cd96be%2A71; bili_jct=543779f554e21b08eddb4d4cbdf660c1; DedeUserID=538828088; DedeUserID__ckMd5=f96ed607acbe97ad; sid=ii8aeooe; bp_t_offset_538828088=550125846804497333; _dfcaptcha=7e770e50e44b90f3f4ed8415b7d9cbe4; PVID=3LIVE_BUVID=AUTO2716217597445981; _uuid=E57517E3-9B52-D19B-8B5A-6081CF0A2C3A49256infoc; buvid3=4774D9E8-9613-4482-B998-662551DD6D2A13412infoc; buvid_fp=4774D9E8-9613-4482-B998-662551DD6D2A13412infoc; buvid_fp_plain=4774D9E8-9613-4482-B998-662551DD6D2A13412infoc; CURRENT_FNVAL=80; blackside_state=1; rpdid=|(u)lukuYYJ~0J'uYkk))|kmJ; fingerprint=6fc5b3a08534cdd60c03bad6c6b13a83; SESSDATA=59e52819%2C1642557719%2Cd96be%2A71; bili_jct=543779f554e21b08eddb4d4cbdf660c1; DedeUserID=538828088; DedeUserID__ckMd5=f96ed607acbe97ad; sid=ii8aeooe; bp_t_offset_538828088=550125846804497333; _dfcaptcha=7e770e50e44b90f3f4ed8415b7d9cbe4; PVID=3",
-                'origin': 'https://live.bilibili.com',
-                'referer': 'https://live.bilibili.com/',
-                'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:84.0) Gecko/20100101 Firefox/84.0'
-            }
-            response = requests.post(url=url, data=data, headers=headers)
-            resp_data = json.loads(response.text)
-            if resp_data["code"] != 0:
-                m = {
-                    "group": 1014696092,
-                    "text": response.text
-                }
-                self.msg_queue.append(m)
-
-        resource_path = "resources/danmu_send"
-        live_resource_path = "resources/bili_live_alarm"
-
-        with open(os.path.join(resource_path, "data.json"), 'rb') as f:
-            data = json.load(f)
-            f.close()
-
-        with open(os.path.join(live_resource_path, "bili_live_status.json"), 'rb') as f:
-            status = json.load(f)
-            f.close()
-        
-        for room_id in data:
-            if room_id in status:
-                if status[room_id]["status"] == 1:
-                    send(room_id, random.choice(data[room_id]["msg"]))
-
-    def uu_reminder(self):
-        def send(room_id, msg):
-            url = 'https://api.live.bilibili.com/msg/send'
-            data = {
-                'color': '16777215',
-                'fontsize': '25',
-                'mode': '1',
-                'msg': msg,
-                'rnd': str(int(time.time())),
-                'roomid': room_id,
-                'bubble': '0',
-                'csrf_token': 'bc3ca64a45fc9ffe0982b5feba119bc1',
-                'csrf': 'bc3ca64a45fc9ffe0982b5feba119bc1'
-            }
-            headers = {
-                'cookie': "LIVE_BUVID=AUTO2716217597445981; _uuid=E57517E3-9B52-D19B-8B5A-6081CF0A2C3A49256infoc; buvid3=4774D9E8-9613-4482-B998-662551DD6D2A13412infoc; buvid_fp=4774D9E8-9613-4482-B998-662551DD6D2A13412infoc; buvid_fp_plain=4774D9E8-9613-4482-B998-662551DD6D2A13412infoc; CURRENT_FNVAL=80; blackside_state=1; rpdid=|(u)lukuYYJ~0J'uYkk))|kmJ; fingerprint=6fc5b3a08534cdd60c03bad6c6b13a83; SESSDATA=59e52819%2C1642557719%2Cd96be%2A71; bili_jct=543779f554e21b08eddb4d4cbdf660c1; DedeUserID=538828088; DedeUserID__ckMd5=f96ed607acbe97ad; sid=ii8aeooe; bp_t_offset_538828088=550125846804497333; _dfcaptcha=7e770e50e44b90f3f4ed8415b7d9cbe4; PVID=3LIVE_BUVID=AUTO2716217597445981; _uuid=E57517E3-9B52-D19B-8B5A-6081CF0A2C3A49256infoc; buvid3=4774D9E8-9613-4482-B998-662551DD6D2A13412infoc; buvid_fp=4774D9E8-9613-4482-B998-662551DD6D2A13412infoc; buvid_fp_plain=4774D9E8-9613-4482-B998-662551DD6D2A13412infoc; CURRENT_FNVAL=80; blackside_state=1; rpdid=|(u)lukuYYJ~0J'uYkk))|kmJ; fingerprint=6fc5b3a08534cdd60c03bad6c6b13a83; SESSDATA=59e52819%2C1642557719%2Cd96be%2A71; bili_jct=543779f554e21b08eddb4d4cbdf660c1; DedeUserID=538828088; DedeUserID__ckMd5=f96ed607acbe97ad; sid=ii8aeooe; bp_t_offset_538828088=550125846804497333; _dfcaptcha=7e770e50e44b90f3f4ed8415b7d9cbe4; PVID=3",
-                'origin': 'https://live.bilibili.com',
-                'referer': 'https://live.bilibili.com/',
-                'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:84.0) Gecko/20100101 Firefox/84.0'
-            }
-            response = requests.post(url=url, data=data, headers=headers)
-            resp_data = json.loads(response.text)
-            if resp_data["code"] != 0:
-                m = {
-                    "group": 1014696092,
-                    "text": response.text
-                }
-                self.msg_queue.append(m)
-        
-        send(21338446, 'uu和观众们该活动活动喝点水了哟')

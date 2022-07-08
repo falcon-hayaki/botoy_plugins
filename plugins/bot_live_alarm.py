@@ -4,6 +4,8 @@ import os
 import json
 import requests, time
 
+from utils.fileio import read_json, write_json
+
 resource_path = "./resources/bili_live_alarm"
 
 bot = Action(
@@ -14,9 +16,7 @@ bot = Action(
 def receive_group_msg(ctx: GroupMsg):
     if ctx.MsgType == "TextMsg":
         if ctx.Content == "查看订阅":
-            with open(os.path.join(resource_path, "subscribes.json"), "rb") as f:
-                subscribes = json.load(f)
-                f.close()
+            subscribes = read_json(os.path.join(resource_path, "subscribes.json"))
             sub_list = []
             for roomid in subscribes:
                 if ctx.FromGroupId in subscribes[roomid]['groups']:
@@ -55,9 +55,7 @@ def receive_group_msg(ctx: GroupMsg):
                 elif uname == "failed":
                     bot.sendGroupText(ctx.FromGroupId, "发生了未预期的错误，叫米白出来修bug gkd")
                 else:
-                    with open(os.path.join(resource_path, "subscribes.json"), "rb") as f:
-                        subscribes = json.load(f)
-                        f.close()
+                    subscribes = read_json(os.path.join(resource_path, "subscribes.json"))
                     if action == "订阅":
                         if roomid in subscribes:
                             if ctx.FromGroupId in subscribes[roomid]['groups']:
@@ -83,9 +81,7 @@ def receive_group_msg(ctx: GroupMsg):
                                 del subscribes[roomid]
                             t = f"你已取消订阅{uname}的开播通知"
                             bot.sendGroupText(ctx.FromGroupId, t)
-                    with open(os.path.join(resource_path, "subscribes.json"), "w") as f:
-                        json.dump(subscribes, f)
-                        f.close()
+                    write_json(os.path.join(resource_path, "subscribes.json"), subscribes)
 
 def get_uname_via_roomid(roomid):
     url = f"https://api.live.bilibili.com/room/v1/Room/get_info?room_id={roomid}"
