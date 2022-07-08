@@ -99,4 +99,12 @@ def get_uname_via_roomid(roomid):
     html = requests.get(url)
     time.sleep(0.5)
     data = json.loads(html.text)
+    if data['code'] == -412:
+        return "-412"
+    elif data["code"] == 1:
+        return "unexist"
+    elif data["code"] == 0:
+        uid = data['data']['uid']
+    else:
+        return "failed"
     return data["data"]["name"]
