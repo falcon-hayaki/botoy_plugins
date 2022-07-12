@@ -104,7 +104,7 @@ def get_uname_via_roomid(roomid):
     elif data["code"] == 1:
         return "unexist"
     elif data["code"] == 0:
-        uid = data['data']['uid']
+        return data["data"]['card']["name"]
     else:
         return "failed"
-    return data["data"]['card']["name"]
+    
