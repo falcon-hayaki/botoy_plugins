@@ -292,7 +292,7 @@ class Timing():
                         start_time = datetime.strptime(str(status[roomid]["start_time"])[:-6], "%Y-%m-%d %H:%M:%S.%f")
                         end_time = datetime.strptime(str(status[roomid]["end_time"])[:-6], "%Y-%m-%d %H:%M:%S.%f")
                         t = f'{status[roomid]["title"]}已结束，开始时间：{status[roomid]["start_time"]}， 结束时间：{status[roomid]["end_time"]}'
-                        if 'checkpoints' in status[roomid]:
+                        if 'checkpoints' in status[roomid] and status[roomid]['checkpoints']:
                             t += '\n剪辑点：\n'
                             for data in status[roomid]['checkpoints']:
                                 check_time = datetime.strptime(str(data["time"])[:-6], "%Y-%m-%d %H:%M:%S.%f")
