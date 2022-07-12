@@ -107,4 +107,4 @@ def get_uname_via_roomid(roomid):
         uid = data['data']['uid']
     else:
         return "failed"
-    return data["data"]["name"]
+    return data["data"]['card']["name"]

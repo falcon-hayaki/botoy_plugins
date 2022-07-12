@@ -24,7 +24,7 @@ def receive_group_msg(ctx: GroupMsg):
                     if info["code"] == -412:
                         bot.sendGroupText(ctx.FromGroupId, "牙白！服务器被阿b风控了！")
                         return
-                    uname = info['data']['name']
+                    uname = info['data']['card']['name']
                     sub_list.append([uname, uid])
             if sub_list:
                 t = "你群关注了：\n"
@@ -51,7 +51,7 @@ def receive_group_msg(ctx: GroupMsg):
                     bot.sendGroupText(ctx.FromGroupId, "牙白！服务器被阿b风控了！")
                 elif info["code"] == 0:
                     subscribes = read_json(os.path.join(resource_path, "subscribes_list.json"))
-                    uname = info['data']['name']
+                    uname = info['data']['card']['name']
                     if action == "关注":
                         if uid in subscribes:
                             if ctx.FromGroupId in subscribes[uid]['groups']:

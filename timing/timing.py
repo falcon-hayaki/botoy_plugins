@@ -76,7 +76,7 @@ class Timing():
                 return data
             cards = {}
             if "cards" not in dynamic['data']:
-                info = get_up_info(uid)['data']
+                info = get_up_info(uid)['data']['card']
                 data[uid]["uname"] = info["name"]
                 data[uid]["face"] = info["face"]
                 data[uid]["sign"] = info["sign"]
@@ -103,7 +103,7 @@ class Timing():
                     cards[dynamic_id]["origin_image_urls"] = card_dict["origin_image_urls"]
                     cards[dynamic_id]["title"] = card_dict["title"]
                     cards[dynamic_id]["words"] = card_dict["words"]
-            info = get_up_info(uid)['data']
+            info = get_up_info(uid)['data']['card']
             status = {}
             status["uname"] = info["name"]
             status["face"] = info["face"]
@@ -229,7 +229,7 @@ class Timing():
             data = json.loads(html.text)
             if data['code'] == -412:
                 return "-412 error"
-            return data['data']['name']
+            return data['data']['card']['name']
             
         def new_subscribe(status, roomid):
             status[roomid] = {
