@@ -95,7 +95,7 @@ def get_uname_via_roomid(roomid):
         uid = data['data']['uid']
     else:
         return "failed"
-    url = f"https://api.bilibili.com/x/space/acc/info?mid={uid}&jsonp=jsonp"
+    url = f"http://api.bilibili.com/x/web-interface/card?mid={uid}&jsonp=jsonp"
     html = requests.get(url)
     time.sleep(0.5)
     data = json.loads(html.text)

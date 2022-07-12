@@ -80,7 +80,7 @@ def receive_group_msg(ctx: GroupMsg):
                     write_json(os.path.join(resource_path, "subscribes_list.json"), subscribes)
 
 def get_up_info(uid):
-    url = f"https://api.bilibili.com/x/space/acc/info?mid={uid}&jsonp=jsonp"
+    url = f"http://api.bilibili.com/x/web-interface/card?mid={uid}&jsonp=jsonp"
     html = requests.get(url)
     time.sleep(0.5)
     data = json.loads(html.text)

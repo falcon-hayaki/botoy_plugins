@@ -55,7 +55,7 @@ class Timing():
             return html_dict
 
         def get_up_info(uid):
-            url = f"https://api.bilibili.com/x/space/acc/info?mid={uid}&jsonp=jsonp"
+            url = f"http://api.bilibili.com/x/web-interface/card?mid={uid}&jsonp=jsonp"
             html = requests.get(url)
             time.sleep(1)
             data = json.loads(html.text)
@@ -223,7 +223,7 @@ class Timing():
                 return [0, data['data']['title'], data['data']['user_cover'], data['data']['uid']]
         
         def get_uname(uid):
-            url = f"https://api.bilibili.com/x/space/acc/info?mid={uid}&jsonp=jsonp"
+            url = f"http://api.bilibili.com/x/web-interface/card?mid={uid}&jsonp=jsonp"
             html = requests.get(url)
             time.sleep(0.5)
             data = json.loads(html.text)
