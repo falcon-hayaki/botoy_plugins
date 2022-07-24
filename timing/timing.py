@@ -13,8 +13,8 @@ class Timing():
     def __init__(self):
         self.msg_queue = []
         self.jobs = [
-            ('msg_sender', 2), 
             ('bili_dynamic', 1), 
+            ('msg_sender', 2), 
             ('bili_live_alarm', 1), 
             ('draw_card_seed', 60*10)
         ]

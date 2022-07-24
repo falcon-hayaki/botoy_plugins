@@ -3,10 +3,9 @@
 from botoy import Botoy, Action, GroupMsg
 from botoy import decorators as deco
 import os
-from pprint import pformat
 import logging
+from logging.handlers import RotatingFileHandler
 import random
-from datetime import datetime
 
 bot_qq = 2798046422
 
@@ -48,11 +47,13 @@ def manage_plugins(ctx: GroupMsg):
             except:
                 action.sendGroupText(group=ctx.FromGroupId, content="failed")
 
+handler = RotatingFileHandler('logs/schedulerLog.txt', 'a', 1024*10, 1, 'utf-8')
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s %(filename)s[line:%(lineno)d] %(levelname)s %(message)s',
                     datefmt='%Y-%m-%d %H:%M:%S',
                     filename='logs/schedulerLog.txt',
-                    filemode='a')
+                    filemode='a',
+                    handlers=[handler])
 
 if __name__ == "__main__":
     from timing import Timing
