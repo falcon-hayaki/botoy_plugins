@@ -58,7 +58,7 @@ logging.basicConfig(level=logging.INFO,
 
 def job_max_instances_listener(event):
     msg = "%s: \n%s\n" % (event.code, pformat(vars(event), indent=4))
-    action.sendGroupText(1014696092, msg)
+    # action.sendGroupText(1014696092, msg)
     if event.jobstore != 'default':
         logging.getLogger('apscheduler').info(msg)
     else:
