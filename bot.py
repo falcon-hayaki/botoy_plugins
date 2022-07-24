@@ -3,8 +3,6 @@
 from botoy import Botoy, Action, GroupMsg
 from botoy import decorators as deco
 import os
-from apscheduler.schedulers.background import BackgroundScheduler
-from apscheduler.events import EVENT_JOB_MAX_INSTANCES
 from pprint import pformat
 import logging
 import random
@@ -56,27 +54,10 @@ logging.basicConfig(level=logging.INFO,
                     filename='logs/schedulerLog.txt',
                     filemode='a')
 
-def job_max_instances_listener(event):
-    msg = "%s: \n%s\n" % (event.code, pformat(vars(event), indent=4))
-    # action.sendGroupText(1014696092, msg)
-    if event.jobstore != 'default':
-        logging.getLogger('apscheduler').info(msg)
-    else:
-        logging.getLogger('apscheduler').warning(msg)
-
 if __name__ == "__main__":
     from timing import Timing
-    timing = Timing()
-    scheduler = BackgroundScheduler(timezone="Asia/Shanghai")
-
-    scheduler.add_job(timing.msg_sender, 'cron', second='*/5')
-    scheduler.add_job(timing.bili_dynamic, 'cron', minute='*/5', next_run_time=datetime.now())
-    scheduler.add_job(timing.bili_live_alarm, 'cron', minute='*/5', next_run_time=datetime.now())
-    scheduler.add_job(timing.draw_card_seed, 'cron', minute='*/10')
-
-    scheduler.add_listener(job_max_instances_listener, EVENT_JOB_MAX_INSTANCES)
-    scheduler._logger = logging
-
-    scheduler.start()
+    
+    t= Timing()
+    t.start()
 
     bot.run()

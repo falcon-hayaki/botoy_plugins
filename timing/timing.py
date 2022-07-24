@@ -4,6 +4,7 @@ import pytz
 import json
 import os
 import random
+import gevent
 from datetime import datetime
 from bot import action
 from utils.fileio import read_json, write_json
@@ -11,6 +12,23 @@ from utils.fileio import read_json, write_json
 class Timing():
     def __init__(self):
         self.msg_queue = []
+        self.jobs = [
+            ('msg_sender', 2), 
+            ('bili_dynamic', 1), 
+            ('bili_live_alarm', 1), 
+            ('draw_card_seed', 60*10)
+        ]
+        
+    def start(self):
+        for name, interval in self.jobs:
+            self.start_background_task(getattr(self, name), interval)
+        
+    def start_background_task(self, f, interval, *args, **kwargs):
+        def _task():
+            while(True):
+                f(*args, **kwargs)
+                gevent.sleep(interval)
+        gevent.spawn(_task).start()
     
     def msg_sender(self):
         if self.msg_queue:
@@ -30,7 +48,7 @@ class Timing():
         def get_api_responce(uid):
             url = f"https://api.vc.bilibili.com/dynamic_svr/v1/dynamic_svr/space_history?host_uid={uid}&offset_dynamic_id=0&need_top=0"
             html = requests.get(url)
-            time.sleep(1)
+            gevent.sleep(1)
             html.encoding = "utf-8"
             html_dict = json.loads(html.text)
             if html_dict['code'] != 0:
@@ -57,7 +75,7 @@ class Timing():
         def get_up_info(uid):
             url = f"http://api.bilibili.com/x/web-interface/card?mid={uid}&jsonp=jsonp"
             html = requests.get(url)
-            time.sleep(1)
+            gevent.sleep(1)
             data = json.loads(html.text)
             return data
 
@@ -198,7 +216,6 @@ class Timing():
                 data = new_subscribe(uid, data)
                 init = True
             data = check_news(uid, init, data, subscribes)
-            time.sleep(3*60/self.bili_dynamic_subnum)
 
         uid_to_del = []
         for uid in data:
@@ -214,7 +231,7 @@ class Timing():
             url = f"https://api.live.bilibili.com/room/v1/Room/get_info?room_id={room_id}"
             html = requests.get(url)
             data = json.loads(html.text)
-            time.sleep(0.5)
+            gevent.sleep(0.5)
             if data['code'] != 0:
                 return [0, "-412 error", "", ""]
             if data["data"]["live_status"] == 1:
@@ -225,7 +242,7 @@ class Timing():
         def get_uname(uid):
             url = f"http://api.bilibili.com/x/web-interface/card?mid={uid}&jsonp=jsonp"
             html = requests.get(url)
-            time.sleep(0.5)
+            gevent.sleep(0.5)
             data = json.loads(html.text)
             if data['code'] == -412:
                 return "-412 error"
