@@ -43,7 +43,6 @@ class Timing():
             subscribes = read_json(os.path.join(resource_path, "subscribes_list.json"))
             data = read_json(os.path.join(resource_path, "dynamic_data.json"))
             for uid in subscribes:
-                print(uid)
                 init = False
                 if uid not in data:
                     data[uid] = {
@@ -164,7 +163,6 @@ class Timing():
                         else:
                             break
                     data[uid]['cards'] = cards
-                    print(data)
             uid_to_del = []
             for uid in data:
                 if uid not in subscribes:
