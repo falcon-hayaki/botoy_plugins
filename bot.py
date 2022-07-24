@@ -1,5 +1,5 @@
-# -*- coding:utf-8 -*-
-
+from gevent import monkey
+monkey.patch_all()
 from botoy import Botoy, Action, GroupMsg
 from botoy import decorators as deco
 import os
@@ -56,7 +56,7 @@ logging.basicConfig(level=logging.INFO,
 if __name__ == "__main__":
     from timing import Timing
     
-    t= Timing()
+    t=Timing()
     t.start()
 
     bot.run()
