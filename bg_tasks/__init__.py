@@ -4,8 +4,8 @@ scheduler = AsyncIOScheduler(timezone=SHA_TZ)
 
 from ._checkin import checkin
 
-def start_scheduler():
+async def start_scheduler():
     scheduler.start()
 
-def get_scheduler_jobs() -> list:
+async def get_scheduler_jobs() -> list:
     return scheduler.get_jobs()
