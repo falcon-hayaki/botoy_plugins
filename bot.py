@@ -1,5 +1,5 @@
 from botoy import bot
-from bg_tasks import scheduler
+from bg_tasks import start_bg
 import asyncio
 
 bot.set_url('127.0.0.1:8086')
@@ -7,9 +7,6 @@ bot.set_url('127.0.0.1:8086')
 bot.load_plugins()
 bot.print_receivers()
 
-async def main():
-    scheduler.start()
-    
-asyncio.run(main())
+start_bg()
 
 bot.run()
