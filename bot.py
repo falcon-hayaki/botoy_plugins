@@ -9,6 +9,7 @@ bot.print_receivers()
 
 async def main():
     scheduler.start()
-    bot.run()
     
 asyncio.run(main())
+
+bot.run()
