@@ -2,7 +2,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from utils.tz import SHA_TZ
 scheduler = BackgroundScheduler(timezone=SHA_TZ)
 
-from . import *
+from ._checkin import checkin
 
 def start_scheduler():
     scheduler.start()
