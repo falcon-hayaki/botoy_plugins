@@ -6,11 +6,16 @@ scheduler = AsyncIOScheduler(timezone=SHA_TZ)
 
 from ._checkin import checkin
 
-def __scheduler_start():
+async def scheduler_start():
+    scheduler.start()
+    while True:
+        await asyncio.sleep(0.1)
+
+def __run_event_loop():
     new_loop = asyncio.new_event_loop()
     asyncio.set_event_loop(new_loop)
-    new_loop.run_until_complete(scheduler.start())
+    new_loop.run_until_complete(scheduler_start())
     return
 
 def start_bg():
-    threading.Thread(target=__scheduler_start).start()
+    threading.Thread(target=__run_event_loop).start()
