@@ -11,4 +11,4 @@ async def main():
     scheduler.start()
     bot.run()
     
-asyncio.run(main)
+asyncio.run(main())
