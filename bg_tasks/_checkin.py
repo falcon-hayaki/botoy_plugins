@@ -2,6 +2,9 @@ from botoy import action, sync_run
 
 from . import scheduler
 
-@scheduler.scheduled_job('cron', hour='*', minute='*', second='*/5')
+@scheduler.scheduled_job('cron', hour='0', minute='5', second='0')
 def checkin():
-    sync_run(action.sendGroupText(1014696092, '签到'))
+    try:
+        sync_run(action.sendGroupText(1014696092, '签到'))
+    except:
+        pass

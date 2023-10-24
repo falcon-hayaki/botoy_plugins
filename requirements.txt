@@ -1,3 +1,14 @@
 botoy
 pydantic==1.10.13
 apscheduler
+aiofiles
+numpy
+Pillow
+pytz
+python-dateutil
+requests
+wordcloud
+jinja2==3.0.3
+werkzeug==1.0.1
+jieba
+paddlepaddle
