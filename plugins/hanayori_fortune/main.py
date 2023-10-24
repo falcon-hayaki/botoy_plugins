@@ -30,5 +30,3 @@ async def hanayori_fortune():
             pic_chosen = join(resource_path, 'img/frame_{}.png'.format(choice))
             pic_path = await Draw.draw_card(pic_chosen, title, text, ctx.from_group)
             await S.image(data=file_to_base64(pic_path), text='今天的运势是', at=ctx.from_user)
-            
-mark_recv(hanayori_fortune)
