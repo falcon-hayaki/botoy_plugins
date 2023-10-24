@@ -16,7 +16,7 @@ async def hanayori_fortune():
             texts = await fileio.read_json(join(resource_path, 'fortune/copywriting.json'))
             titles = await fileio.read_json(join(resource_path, 'fortune/goodLuck.json'))
             now = datetime.now(tz=timezone("Asia/Shanghai"))
-            seed = int(''.join([str(i) for i in [now.year, now.month, now.day, ctx.from_user]]))
+            seed = int(''.join([str(i) for i in [now.year, now.month, now.day, msg.from_user]]))
             random.seed(seed)
             choice = random.choice(range(1, 12))
             random.seed(seed)
@@ -27,5 +27,5 @@ async def hanayori_fortune():
             text = text["content"]
             title = title["name"]
             pic_chosen = join(resource_path, 'img/frame_{}.png'.format(choice))
-            pic_path = await Draw.draw_card(pic_chosen, title, text, ctx.from_group)
-            await S.image(data=file_to_base64(pic_path), text='今天的运势是', at=ctx.from_user)
+            pic_path = await Draw.draw_card(pic_chosen, title, text, msg.from_group)
+            await S.image(data=file_to_base64(pic_path), text='今天的运势是', at=msg.from_user)
