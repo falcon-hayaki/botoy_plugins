@@ -1,5 +1,4 @@
 
-from os import getcwd
 from os.path import join
 import random
 from datetime import datetime
@@ -7,7 +6,7 @@ from pytz import timezone
 
 from botoy import ctx, S, file_to_base64
 
-resource_path = join(getcwd(), 'resources/hanayori_fortune')
+resource_path = 'resources/hanayori_fortune'
 from utils import fileio
 from .draw import Draw
 
