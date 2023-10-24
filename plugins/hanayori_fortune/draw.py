@@ -1,5 +1,5 @@
 from PIL import Image, ImageDraw, ImageFont
-from os import getcwd
+import os
 
 from .main import resource_path
 
@@ -40,6 +40,7 @@ class Draw():
             y = int(image_font_center[1] - font_height / 2)
             draw.text((x, y), textVertical, fill = color, font = ttfront)
         # Save
+        os.system(f'mkdir -p {resource_path}/out')
         outPath = f'{resource_path}/out/{from_user}.png'
         img.save(outPath)
         return outPath
