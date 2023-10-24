@@ -42,8 +42,7 @@ class Draw():
         # Save
         outPath = f'{resource_path}/out/{from_user}.png'
         img.save(outPath)
-        file_path = f'file://{getcwd()}/{outPath}'
-        return file_path
+        return outPath
 
     @classmethod
     def decrement(cls, text):
