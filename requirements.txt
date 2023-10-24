@@ -3,7 +3,7 @@ pydantic==1.10.13
 apscheduler
 aiofiles
 numpy
-Pillow
+Pillow==9.5.0
 pytz
 python-dateutil
 requests
