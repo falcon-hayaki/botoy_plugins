@@ -10,8 +10,10 @@ from utils import fileio
 from .draw import Draw
 
 async def hanayori_fortune():
-    if msg := (ctx.g):
+    if msg := ctx.g:
+        print('test1')
         if msg.text.strip() in ['抽签', '抽签签']:
+            print('test2')
             texts = await fileio.read_json(join(resource_path, 'fortune/copywriting.json'))
             titles = await fileio.read_json(join(resource_path, 'fortune/goodLuck.json'))
             now = datetime.now(tz=timezone("Asia/Shanghai"))
