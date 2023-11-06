@@ -12,12 +12,14 @@ crontab_next = None
 test1 = datetime.utcnow()
 test2 = '123'
 test3 = beijingnow()
+test4 = None
 
 async def checkin():
     print(test1)
     print(test2)
     print(test3)
-    print(crontab_next)
+    print(test4)
+    # print(crontab_next)
     if msg := ctx.g and not lock.locked():
         async with lock:
             if crontab_next is None or beijingnow() >= crontab_next:
