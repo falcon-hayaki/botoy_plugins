@@ -8,8 +8,10 @@ from utils.tz import beijingnow
 lock = asyncio.Lock()
 crontab = croniter('* * * * *', beijingnow())
 
-async def help_choose():
+async def checkin():
     if msg := ctx.g and not lock.locked():
         async with lock:
             if beijingnow() >= crontab.get_next(datetime):
                 await action.sendGroupText(1014696092, '签到')
+
+mark_recv(checkin)
