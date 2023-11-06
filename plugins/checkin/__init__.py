@@ -8,6 +8,7 @@ from utils.tz import beijingnow
 lock = asyncio.Lock()
 crontab = croniter('* * * * *', beijingnow())
 next_check_time = crontab.get_next(datetime)
+print(next_check_time)
 
 async def checkin():
     if msg := ctx.g and not lock.locked():
