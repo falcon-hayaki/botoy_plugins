@@ -7,22 +7,14 @@ from botoy import mark_recv, ctx, action
 from utils.tz import beijingnow
 
 lock = asyncio.Lock()
-crontab = croniter('* * * * *', beijingnow())
-crontab_next = None
-test1 = datetime.utcnow()
-test2 = '123'
-test3 = beijingnow()
-test4 = None
+crontab = croniter('*/5 * * * *', beijingnow())
+crontab_next = crontab.get_next(datetime)
 
 async def checkin():
-    print(test1)
-    print(test2)
-    print(test3)
-    print(test4)
-    # print(crontab_next)
+    global lock, crontab, crontab_next
     if msg := ctx.g and not lock.locked():
         async with lock:
-            if crontab_next is None or beijingnow() >= crontab_next:
+            if beijingnow() >= crontab_next:
                 await action.sendGroupText(1014696092, '签到')
                 crontab_next = crontab.get_next(datetime)
 
