@@ -8,14 +8,16 @@ from utils.tz import beijingnow
 
 lock = asyncio.Lock()
 crontab = croniter('* * * * *', beijingnow())
-next_check_time = copy.copy(crontab.get_next(datetime))
+next_check_time = copy.deepcopy(crontab.get_next(datetime))
 print(type(next_check_time), next_check_time)
-test1 = datetime.now()
+test1 = datetime.utcnow()
 test2 = '123'
+test3 = beijingnow()
 
 async def checkin():
     print(test1)
     print(test2)
+    print(test3)
     print(next_check_time)
     if msg := ctx.g and not lock.locked():
         async with lock:
