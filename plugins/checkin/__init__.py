@@ -7,7 +7,7 @@ from botoy import mark_recv, ctx, action
 from utils.tz import beijingnow
 
 lock = asyncio.Lock()
-crontab = croniter('*/5 * * * *', beijingnow())
+crontab = croniter('5 0 * * *', beijingnow())
 crontab_next = crontab.get_next(datetime)
 
 async def checkin():
