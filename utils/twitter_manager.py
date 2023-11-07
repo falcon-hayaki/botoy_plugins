@@ -13,8 +13,8 @@ class TwitterManager():
         # get config
         twitter_conf = jconfig.get_configuration('twitter')
         self.__headers = {
-            'cookie': twitter_conf.cookie,
-            'authorization': twitter_conf.authorization
+            'cookie': twitter_conf.get('cookie'),
+            'authorization': twitter_conf.get('authorization')
         }
         
         if requests_get_fn is not None:
