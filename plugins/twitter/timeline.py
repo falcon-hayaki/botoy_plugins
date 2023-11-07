@@ -21,16 +21,20 @@ async def checkin():
     if msg := ctx.g and not lock.locked():
         async with lock:
             if beijingnow() >= crontab_next:
+                print('test')
                 subscribes = await fileio.read_json(join(resource_path, 'subscribes.json'))
+                print(subscribes)
                 for uid in subscribes:
                     try:
                         data = await fileio.read_json(join(resource_path, 'data.json'))
                         # 初始化用户数据
                         if uid not in data:
                             user_info = tm.parse_user_info(tm.get_user_info(uid).json())
+                            print(user_info)
                             data[uid] = copy.deepcopy(user_info)
                             timeline_row = tm.get_user_timeline(data[uid]['id']).json()
                             timeline = tm.parse_timeline(timeline_row)
+                            print(timeline)
                             if timeline is None:
                                 raise ValueError(f'tl value error: {timeline_row}')
                             # handle errors
