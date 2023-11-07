@@ -14,7 +14,8 @@ class TwitterManager():
         twitter_conf = jconfig.get_configuration('twitter')
         self.__headers = {
             'cookie': twitter_conf.get('cookie'),
-            'authorization': twitter_conf.get('authorization')
+            'authorization': twitter_conf.get('authorization'),
+            'x-csrf-token': twitter_conf.get('x-csrf-token')
         }
         
         if requests_get_fn is not None:
