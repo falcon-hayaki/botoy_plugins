@@ -11,14 +11,11 @@ async def get_tweet():
     if msg := ctx.g:
         if msg.text and re.match(tweet_url_rule, msg.text.strip()):
             re_res = re.match(tweet_url_rule, msg.text.strip())
-            print(re_res)
             tid = re_res.groups()[0]
             res = tm.get_tweet_detail(tid)
-            print(res, res.text)
             if res.status_code != 200:
                 return
             tdata, user_info = tm.parse_tweet_detail(res.json())
-            print(tdata, user_info)
             if not tdata:
                 return
             imgs = None
