@@ -14,7 +14,7 @@ async def get_tweet():
             print(re_res)
             tid = re_res.groups()[0]
             res = tm.get_tweet_detail(tid)
-            print(res)
+            print(res, res.text)
             if res.status_code != 200:
                 return
             tdata, user_info = tm.parse_tweet_detail(res.json())
