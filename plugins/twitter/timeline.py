@@ -16,7 +16,7 @@ lock = asyncio.Lock()
 crontab = croniter('* * * * *', beijingnow())
 crontab_next = crontab.get_next(datetime)
 
-async def checkin():
+async def timeline():
     global lock, crontab, crontab_next, resource_path
     if msg := ctx.g and not lock.locked():
         async with lock:
