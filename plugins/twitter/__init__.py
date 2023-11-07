@@ -1,6 +1,6 @@
 from botoy import mark_recv, jconfig
 
-if jconfig.get('twitter'):
+if jconfig.get('twitter.cookie'):
     from utils.twitter_manager import TwitterManager
     tm = TwitterManager()
 
