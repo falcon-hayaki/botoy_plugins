@@ -3,13 +3,13 @@ import copy
 import traceback
 from os.path import join
 from croniter import croniter
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta
 from dateutil import parser
 from botoy import ctx, action
 
 resource_path = 'resources/twitter_tl'
 from . import tm
-from utils.tz import beijingnow
+from utils.tz import beijingnow, SHA_TZ
 from utils import fileio
 
 lock = asyncio.Lock()
@@ -73,9 +73,9 @@ async def timeline():
                                 tdata = timeline[t]
                                 url = f'https://twitter.com/{uid}/status/{tdata["id"]}'
                                 tweet_type = tdata['tweet_type']
-                                created_at = parser.parse(tdata['created_at']).astimezone(timezone("Asia/Shanghai"))
+                                created_at = parser.parse(tdata['created_at']).astimezone(SHA_TZ)
                                 # 超过10分钟的推默认超时, 不再处理
-                                now = datetime.now(timezone("Asia/Shanghai"))
+                                now = datetime.now(SHA_TZ)
                                 imgs = None
                                 videos = None
                                 if now - created_at > timedelta(minutes=10):
@@ -86,13 +86,13 @@ async def timeline():
                                     videos = tdata.get('videos')
                                 elif tweet_type == 'retweet':
                                     retweet_data = tdata['retweet_data']
-                                    origin_created_at = parser.parse(retweet_data['data']['created_at']).astimezone(timezone("Asia/Shanghai"))
+                                    origin_created_at = parser.parse(retweet_data['data']['created_at']).astimezone(SHA_TZ)
                                     t = f"{user_info['name']}转推了\n转发自:\n{retweet_data['user_info']['name']}发布于{origin_created_at}\n\n{retweet_data['data']['text']}\n\n{url}"
                                     imgs = retweet_data['data'].get('imgs')
                                     videos = retweet_data['data'].get('videos')
                                 elif tweet_type == 'quote':
                                     quote_data = tdata['quote_data']
-                                    origin_created_at = parser.parse(quote_data['data']['created_at']).astimezone(timezone("Asia/Shanghai"))
+                                    origin_created_at = parser.parse(quote_data['data']['created_at']).astimezone(SHA_TZ)
                                     t = f"{user_info['name']}转推了\n发布于{created_at}\n\n{tdata['text']}\n\n转发自:\n{quote_data['user_info']['name']}发布于{origin_created_at}\n\n{quote_data['data']['text']}\n\n{url}"
                                     imgs = quote_data['data'].get('imgs')
                                     videos = quote_data['data'].get('videos')
