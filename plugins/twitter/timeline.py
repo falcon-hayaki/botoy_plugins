@@ -13,7 +13,7 @@ from utils.tz import beijingnow
 from utils import fileio
 
 lock = asyncio.Lock()
-crontab = croniter('*/5 * * * *', beijingnow())
+crontab = croniter('* * * * *', beijingnow())
 crontab_next = crontab.get_next(datetime)
 
 async def checkin():
