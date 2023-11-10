@@ -16,6 +16,7 @@ async def checkin():
         async with lock:
             if beijingnow() >= crontab_next:
                 await action.sendGroupText(1014696092, '签到')
+                await action.sendGroupText(856337734, '签到')
                 crontab_next = crontab.get_next(datetime)
 
 mark_recv(checkin)
