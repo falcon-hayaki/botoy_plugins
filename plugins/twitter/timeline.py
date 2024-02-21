@@ -50,7 +50,7 @@ async def timeline():
                                             t = f"{data[uid]['name']}更新了{k}\n"
                                             await action.sendGroupPic(group=group, text=t, url=v)
                                         elif k == 'followers_count':
-                                            if int(v/1000) != int(data[uid][k]/1000):
+                                            if int(v/1000) > int(data[uid][k]/1000):
                                                 t = f"{data[uid]['name']}粉丝数到达{v}"
                                                 await action.sendGroupText(group=group, text=t)
                                         else:
