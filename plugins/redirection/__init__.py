@@ -1,12 +1,14 @@
 from os.path import join
 
-from botoy import ctx, S, mark_recv
+from botoy import ctx, S, mark_recv, jconfig
 
 resource_path = 'resources/redirection'
 from utils import fileio
 
 async def redirection():
     if msg := ctx.f:
+        if jconfig.qq and msg.from_user == jconfig.qq:
+            return
         skip_users = await fileio.read_json(join(resource_path, 'skip_users.json'))
         if msg.from_user in skip_users:
             return
