@@ -160,7 +160,7 @@ class BiliManager():
         return dynamic_id, dynamic_parsed
     
     @staticmethod
-    def parse_video_info(self, video_info_raw):
+    def parse_video_info(video_info_raw):
         try:
             video_res = video_info_raw['data']
             return dict(
