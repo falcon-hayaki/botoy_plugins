@@ -1,5 +1,6 @@
 import asyncio
 import copy
+import re
 import traceback
 from os.path import join
 from croniter import croniter
@@ -43,9 +44,13 @@ async def bili_dynamic_timeline():
                             for k, v in user_info.items():
                                 if v != data[uid][k]:
                                     for group in subscribes[uid]['groups']:
-                                        if k in ['face', 'top_photo', '']:
-                                            t = f"{data[uid]['name']}更新了{k}\n"
-                                            await action.sendGroupPic(group=group, text=t, url=v)
+                                        if k in ['face', 'top_photo']:
+                                            # NOTE: 同一张图获取到的的cdn地址可能会不同
+                                            new_re_res = re.match('.+\/([a-zA-Z0-9]+)\.(?:jpg|png)', v)
+                                            old_re_res = re.match('.+\/([a-zA-Z0-9]+)\.(?:jpg|png)', data[uid][k])
+                                            if new_re_res and old_re_res and new_re_res.groups()[0] != old_re_res.groups()[0]:
+                                                t = f"{data[uid]['name']}更新了{k}:\n{v}"
+                                                await action.sendGroupPic(group=group, text=t, url=v)
                                         elif k == 'followers_count':
                                             if int(v/1000) > int(data[uid][k]/1000):
                                                 t = f"{data[uid]['name']}粉丝数到达{v}"

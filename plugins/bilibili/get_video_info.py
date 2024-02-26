@@ -11,8 +11,9 @@ video_url_rule = 'https:\/\/www.bilibili\.com\/video\/(BV[a-zA-Z0-9_]+).*'
 bv_rule = 'BV[a-zA-Z0-9_]+'
 
 async def get_video_info():
+    global video_url_rule, bv_rule
     if msg := ctx.g:
-        if msg.text and (re.match(video_url_rule, msg.text.strip()) or re.match(bv_rule, msg.text.strip())):
+        if msg.text and msg.from_group == 1014696092 and (re.match(video_url_rule, msg.text.strip()) or re.match(bv_rule, msg.text.strip())):
             video_url_rule = re.match(video_url_rule, msg.text.strip())
             bv_rule = re.match(bv_rule, msg.text.strip())
             if video_url_rule:
