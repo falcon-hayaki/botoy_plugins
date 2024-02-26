@@ -44,6 +44,10 @@ class BiliManager():
         url = f'https://api.live.bilibili.com/room/v1/Room/get_info?id={room_id}'
         return self.__get(url)
     
+    def get_video_info(self, bvid):
+        url = f'https://api.bilibili.com/x/web-interface/view?bvid={bvid}'
+        return self.__get(url)
+    
     def get_dynamic_list(self, uid):
         url = f'https://api.bilibili.com/x/polymer/web-dynamic/v1/feed/space?offset=&host_mid={uid}&timezone_offset=-480&platform=web&features=itemOpusStyle,listOnlyfans,opusBigCover,onlyfansVote&web_location=333.999'
         return self.__get(url)
@@ -155,6 +159,26 @@ class BiliManager():
         
         return dynamic_id, dynamic_parsed
     
+    @staticmethod
+    def parse_video_info(self, video_info_raw):
+        try:
+            video_res = video_info_raw['data']
+            return dict(
+                title=video_res['title'],
+                pic=video_res['pic'],
+                desc=video_res['desc'],
+                pubdate=video_res['pubdate'],
+                up=video_res['owner']['name'],
+                view=video_res['stat']['view'],
+                danmaku=video_res['stat']['danmaku'],
+                reply=video_res['stat']['reply'],
+                favorite=video_res['stat']['favorite'],
+                coin=video_res['stat']['coin'],
+                share=video_res['stat']['share'],
+            )
+        except:
+            raise ValueError(f'video_info: {video_info_raw}')
+    
 class Wbi():
     '''
     WBI签名。
@@ -205,4 +229,5 @@ if __name__ == '__main__':
     # print(bm.get_live_info(591194).json())
     # print(bm.get_dynamic_list(3546626599684797).json())
     # print(bm.get_user_info(3546626599684797).json())
-    print(bm.get_user_card(3546626599684797).json())
+    # print(bm.get_user_card(3546626599684797).json())
+    print(bm.get_video_info('BV1aw411X7hx').json())
