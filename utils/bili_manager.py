@@ -127,7 +127,7 @@ class BiliManager():
         basic = dynamic_raw.get('basic', {})
         module_author = modules.get('module_author', {})
         public_time = datetime.fromtimestamp(module_author.get('pub_ts'))
-        dynamic_parsed['time'] = public_time
+        dynamic_parsed['time'] = module_author.get('pub_ts')
         dynamic_parsed['text'] += f"{module_author.get('name')}{module_author.get('pub_action') or '发布于'}\n{public_time.strftime('%Y-%m-%d %H:%M:%S%z')}\n\n"
         dynamic_parsed['links'].append(basic.get('jump_url', ''))
         # NOTE: 分类处理
