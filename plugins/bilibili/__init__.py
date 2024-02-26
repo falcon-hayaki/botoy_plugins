@@ -4,8 +4,6 @@ if jconfig.get('bilibili.cookie'):
     from utils.bili_manager import BiliManager
     bm = BiliManager()
 
-    from .get_tweet import get_tweet
-    from .timeline import timeline
+    from .timeline import bili_dynamic_timeline
     
-    mark_recv(get_tweet)
-    mark_recv(timeline)
+    mark_recv(bili_dynamic_timeline)
