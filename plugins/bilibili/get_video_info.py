@@ -12,15 +12,16 @@ bv_rule = r'BV[a-zA-Z0-9_]+'
 
 async def get_video_info():
     global video_url_rule, bv_rule
-    print(video_url_rule, bv_rule)
     if msg := ctx.g:
         if msg.text and msg.from_group == 1014696092 and (re.match(video_url_rule, msg.text.strip()) or re.match(bv_rule, msg.text.strip())):
-            video_url_rule = re.match(video_url_rule, msg.text.strip())
-            bv_rule = re.match(bv_rule, msg.text.strip())
-            if video_url_rule:
-                bv = video_url_rule.groups()[0]
-            elif bv_rule:
+            video_url_res = re.match(video_url_rule, msg.text.strip())
+            bv_res = re.match(bv_rule, msg.text.strip())
+            if video_url_res:
+                bv = video_url_res.groups()[0]
+            elif bv_res:
                 bv = msg.text.strip()
+            else: 
+                return
             try:
                 video_info = bm.parse_video_info(bm.get_video_info(bv).json())
                 t = f"{video_info['up']}发布于{datetime.fromtimestamp(video_info['pubdate']).strftime('%Y-%m-%d %H:%M:%S%z')}\n"
