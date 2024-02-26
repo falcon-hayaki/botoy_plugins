@@ -78,11 +78,11 @@ class BiliManager():
                 face=user_result['face'],
                 sign=user_result['sign'],
                 top_photo=user_result['top_photo'],
-                live_status=user_result['live_room'].get('liveStatus'),
-                live_title=user_result['live_room'].get('title'),
-                live_url=user_result['live_room'].get('url'),
-                live_cover=user_result['live_room'].get('cover'),
-                live_text=user_result['live_room'].get('watched_show', {}).get('text_large'),
+                live_status=user_result.get('live_room', {}).get('liveStatus'),
+                live_title=user_result.get('live_room', {}).get('title'),
+                live_url=user_result.get('live_room', {}).get('url'),
+                live_cover=user_result.get('live_room', {}).get('cover'),
+                live_text=user_result.get('live_room', {}).get('watched_show', {}).get('text_large'),
             )
             user_result = user_card['data']
             user_parsed.update(dict(
