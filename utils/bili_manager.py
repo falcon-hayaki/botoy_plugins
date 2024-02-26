@@ -78,11 +78,11 @@ class BiliManager():
                 face=user_result['face'],
                 sign=user_result['sign'],
                 top_photo=user_result['top_photo'],
-                live_status=user_result.get('live_room') or {}.get('liveStatus'),
-                live_title=user_result.get('live_room') or {}.get('title'),
-                live_url=user_result.get('live_room') or {}.get('url'),
-                live_cover=user_result.get('live_room') or {}.get('cover'),
-                live_text=user_result.get('live_room') or {}.get('watched_show', {}).get('text_large'),
+                live_status=(user_result.get('live_room') or {}).get('liveStatus'),
+                live_title=(user_result.get('live_room') or {}).get('title'),
+                live_url=(user_result.get('live_room') or {}).get('url'),
+                live_cover=(user_result.get('live_room') or {}).get('cover'),
+                live_text=(user_result.get('live_room') or {}).get('watched_show', {}).get('text_large'),
             )
             user_result = user_card['data']
             user_parsed.update(dict(
@@ -235,6 +235,6 @@ if __name__ == '__main__':
     # print(bm.get_dynamic_list(3546626599684797).json())
     # with open('test.json', 'w') as f:
     #     json.dump(bm.get_dynamic_list(3546626599684797).json(), f)
-    print(bm.get_user_info(3493265644980448).json())
+    print(bm.get_user_info(3546626599684797).json())
     # print(bm.get_user_card(3546626599684797).json())
     # print(bm.get_video_info('BV1aw411X7hx').json())

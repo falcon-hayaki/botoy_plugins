@@ -58,11 +58,11 @@ async def bili_dynamic_timeline():
                                         # 直播间信息
                                         elif k.startswith('live_'):
                                             if k == 'live_status':
-                                                if v == 0:
+                                                if data[uid][k] is not None and data[uid][k] == 1 and v == 0:
                                                     t = f"{data[uid]['name']}下播了\n"
                                                     t += f"本次直播{user_info['live_text']}"
                                                     await action.sendGroupText(group=group, text=t)
-                                                else:
+                                                elif data[uid][k] is not None and data[uid][k] == 0 and v == 1:
                                                     t = f"{data[uid]['name']}开播了\n"
                                                     t += f"标题：{user_info['live_title']}\n"
                                                     t += user_info['live_url']
