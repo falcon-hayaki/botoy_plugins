@@ -22,7 +22,7 @@ async def get_video_info():
                 bv = msg.text.strip()
             try:
                 video_info = bm.parse_video_info(bm.get_video_info(bv).json())
-                t = f"{video_info['owner']}发布于{datetime.fromtimestamp(video_info['pubdate']).strftime('%Y-%m-%d %H:%M:%S%z')}\n"
+                t = f"{video_info['up']}发布于{datetime.fromtimestamp(video_info['pubdate']).strftime('%Y-%m-%d %H:%M:%S%z')}\n"
                 t += f"标题：{video_info['title']}\n链接：{video_info['desc']}\n"
                 t += f"简介：{video_info['desc']}\n"
                 await action.sendGroupPic(group=msg.from_group, text=t, url=[video_info['pic']])
