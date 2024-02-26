@@ -14,7 +14,7 @@ from utils.tz import beijingnow, SHA_TZ
 from utils import fileio
 
 lock = asyncio.Lock()
-crontab = croniter('* * * * *', beijingnow())
+crontab = croniter('*/5 * * * *', beijingnow())
 crontab_next = crontab.get_next(datetime)
 
 async def bili_dynamic_timeline():
