@@ -7,7 +7,7 @@ from botoy import ctx, S, action
 from . import bm
 from utils.tz import SHA_TZ
 
-video_url_rule = 'https:\/\/www.bilibili\.com\/video\/(BV[a-zA-Z0-9_]+).*'
+video_url_rule = 'https:\/\/www\.bilibili\.com\/video\/(BV[a-zA-Z0-9_]+).*'
 bv_rule = 'BV[a-zA-Z0-9_]+'
 
 async def get_video_info():
