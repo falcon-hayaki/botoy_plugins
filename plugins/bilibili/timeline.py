@@ -27,7 +27,10 @@ async def bili_dynamic_timeline():
                         data = await fileio.read_json(join(resource_path, 'data.json'))
                         # 初始化用户数据
                         if uid not in data:
-                            user_info = bm.parse_user_info(bm.get_user_info(uid).json(), bm.get_user_card(uid).json())
+                            info = bm.get_user_info(uid).json()
+                            card = bm.get_user_card(uid).json()
+                            user_info = bm.parse_user_info(info, card)
+                            print(info, card, user_info)
                             data[uid] = copy.deepcopy(user_info)
                             timeline_row = bm.get_dynamic_list(uid).json()
                             dynamic_id_list, dynamic_data = bm.parse_timeline(timeline_row)
