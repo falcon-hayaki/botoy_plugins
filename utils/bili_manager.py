@@ -147,7 +147,7 @@ class BiliManager():
             dynamic_parsed['text'] += f"时长：{archive.get('duration_text', '')}\n"
             dynamic_parsed['text'] += f"简介：{archive.get('desc', '')}\n"
             if cover := archive.get('cover'):
-                dynamic_parsed['text'].append(cover)
+                dynamic_parsed['imgs'].append(cover)
         # 其它动态
         else:
             dynamic_parsed['unknown_type'] = dynamic_type
