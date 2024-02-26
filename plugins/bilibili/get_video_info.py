@@ -12,6 +12,7 @@ bv_rule = r'BV[a-zA-Z0-9_]+'
 
 async def get_video_info():
     global video_url_rule, bv_rule
+    print(video_url_rule, bv_rule)
     if msg := ctx.g:
         if msg.text and msg.from_group == 1014696092 and (re.match(video_url_rule, msg.text.strip()) or re.match(bv_rule, msg.text.strip())):
             video_url_rule = re.match(video_url_rule, msg.text.strip())
@@ -23,7 +24,7 @@ async def get_video_info():
             try:
                 video_info = bm.parse_video_info(bm.get_video_info(bv).json())
                 t = f"{video_info['up']}发布于{datetime.fromtimestamp(video_info['pubdate']).strftime('%Y-%m-%d %H:%M:%S%z')}\n"
-                t += f"标题：{video_info['title']}\n链接：{video_info['pic']}\n"
+                t += f"标题：{video_info['title']}\n"
                 t += f"简介：{video_info['desc']}\n"
                 t += f"观看数：{video_info['view']}\t"
                 t += f"弹幕数：{video_info['danmaku']}\t"
