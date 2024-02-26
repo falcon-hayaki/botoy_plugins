@@ -78,7 +78,7 @@ class BiliManager():
                 face=user_result['face'],
                 sign=user_result['sign'],
                 top_photo=user_result['top_photo'],
-                live_status=user_result['live_room'].get('live_status'),
+                live_status=user_result['live_room'].get('liveStatus'),
                 live_title=user_result['live_room'].get('title'),
                 live_url=user_result['live_room'].get('url'),
                 live_cover=user_result['live_room'].get('cover'),
@@ -153,6 +153,10 @@ class BiliManager():
             dynamic_parsed['text'] += f"简介：{archive.get('desc', '')}\n"
             if cover := archive.get('cover'):
                 dynamic_parsed['imgs'].append(cover)
+        # 不作处理的动态
+        ## 直播动态
+        elif dynamic_type in ['DYNAMIC_TYPE_LIVE_RCMD']:
+            return None, None
         # 其它动态
         else:
             dynamic_parsed['unknown_type'] = dynamic_type
@@ -229,6 +233,8 @@ if __name__ == '__main__':
     bm = BiliManager()
     # print(bm.get_live_info(591194).json())
     # print(bm.get_dynamic_list(3546626599684797).json())
+    with open('test.json', 'w') as f:
+        json.dump(bm.get_dynamic_list(3546626599684797).json(), f)
     # print(bm.get_user_info(3546626599684797).json())
     # print(bm.get_user_card(3546626599684797).json())
-    print(bm.get_video_info('BV1aw411X7hx').json())
+    # print(bm.get_video_info('BV1aw411X7hx').json())

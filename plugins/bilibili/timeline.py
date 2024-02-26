@@ -51,7 +51,7 @@ async def bili_dynamic_timeline():
                                             if new_re_res and old_re_res and new_re_res.groups()[0] != old_re_res.groups()[0]:
                                                 t = f"{data[uid]['name']}更新了{k}:\n{v}"
                                                 await action.sendGroupPic(group=group, text=t, url=v)
-                                        elif k == 'followers_count':
+                                        elif k == 'followers':
                                             if int(v/1000) > int(data[uid][k]/1000):
                                                 t = f"{data[uid]['name']}粉丝数到达{v}"
                                                 await action.sendGroupText(group=group, text=t)
