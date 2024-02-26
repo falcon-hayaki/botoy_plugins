@@ -85,6 +85,7 @@ class BiliManager():
                 followers=user_result['follower'],
                 following=user_result['card']['attention'],
             ))
+            return user_parsed
         except:
             raise ValueError(f'user_info: {user_info}')
         
