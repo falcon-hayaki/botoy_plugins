@@ -7,8 +7,8 @@ from botoy import ctx, S, action
 from . import bm
 from utils.tz import SHA_TZ
 
-video_url_rule = 'https:\/\/www\.bilibili\.com\/video\/(BV[a-zA-Z0-9_]+).*'
-bv_rule = 'BV[a-zA-Z0-9_]+'
+video_url_rule = r'https:\/\/www\.bilibili\.com\/video\/(BV[a-zA-Z0-9_]+).*'
+bv_rule = r'BV[a-zA-Z0-9_]+'
 
 async def get_video_info():
     global video_url_rule, bv_rule
@@ -23,8 +23,15 @@ async def get_video_info():
             try:
                 video_info = bm.parse_video_info(bm.get_video_info(bv).json())
                 t = f"{video_info['up']}发布于{datetime.fromtimestamp(video_info['pubdate']).strftime('%Y-%m-%d %H:%M:%S%z')}\n"
-                t += f"标题：{video_info['title']}\n链接：{video_info['desc']}\n"
+                t += f"标题：{video_info['title']}\n链接：{video_info['pic']}\n"
                 t += f"简介：{video_info['desc']}\n"
+                t += f"观看数：{video_info['view']}\t"
+                t += f"弹幕数：{video_info['danmaku']}\t"
+                t += f"评论数：{video_info['reply']}\t"
+                t += f"点赞：{video_info['like']}\t"
+                t += f"投币：{video_info['coin']}\t"
+                t += f"收藏：{video_info['favorite']}\t"
+                t += f"分享：{video_info['share']}\t"
                 await action.sendGroupPic(group=msg.from_group, text=t, url=[video_info['pic']])
             except Exception as e:
                 print(e, traceback.format_exc())

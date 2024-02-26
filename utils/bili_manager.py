@@ -172,6 +172,7 @@ class BiliManager():
                 view=video_res['stat']['view'],
                 danmaku=video_res['stat']['danmaku'],
                 reply=video_res['stat']['reply'],
+                like=video_res['stat']['like'],
                 favorite=video_res['stat']['favorite'],
                 coin=video_res['stat']['coin'],
                 share=video_res['stat']['share'],
