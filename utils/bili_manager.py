@@ -153,6 +153,19 @@ class BiliManager():
             dynamic_parsed['text'] += f"简介：{archive.get('desc', '')}\n"
             if cover := archive.get('cover'):
                 dynamic_parsed['imgs'].append(cover)
+        # 转发动态
+        elif dynamic_type == 'DYNAMIC_TYPE_FORWARD':
+            desc = module_dynamic.get('desc', {})
+            dynamic_parsed['text'] += desc.get('text', '') + '\n\n'
+            dynamic_parsed['text'] += '原动态: \n'
+            orig = dynamic_raw.get('orig', {})
+            orig_parsed = BiliManager.parse_dynamic_one(orig)
+            if orig_parsed['unknown_type']:
+                dynamic_parsed['text'] += f"未处理的类型：{orig_parsed['unknown_type']}"
+            else:
+                dynamic_parsed['text'] += orig_parsed['text']
+                dynamic_parsed['imgs'] += orig_parsed['imgs']
+                dynamic_parsed['links'] += orig_parsed['links']
         # 不作处理的动态
         ## 直播动态
         elif dynamic_type in ['DYNAMIC_TYPE_LIVE_RCMD']:
@@ -232,9 +245,9 @@ class Wbi():
 if __name__ == '__main__':
     bm = BiliManager()
     # print(bm.get_live_info(591194).json())
-    # print(bm.get_dynamic_list(3546626599684797).json())
+    print(bm.get_dynamic_list(686647628).json())
     # with open('test.json', 'w') as f:
     #     json.dump(bm.get_dynamic_list(3546626599684797).json(), f)
-    print(bm.get_user_info(3546626599684797).json())
+    # print(bm.get_user_info(3546626599684797).json())
     # print(bm.get_user_card(3546626599684797).json())
     # print(bm.get_video_info('BV1aw411X7hx').json())
