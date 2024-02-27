@@ -159,7 +159,7 @@ class BiliManager():
             dynamic_parsed['text'] += desc.get('text', '') + '\n\n'
             dynamic_parsed['text'] += '原动态: \n'
             orig = dynamic_raw.get('orig', {})
-            orig_parsed = BiliManager.parse_dynamic_one(orig)
+            orig_id, orig_parsed = BiliManager.parse_dynamic_one(orig)
             if orig_parsed['unknown_type']:
                 dynamic_parsed['text'] += f"未处理的类型：{orig_parsed['unknown_type']}"
             else:
