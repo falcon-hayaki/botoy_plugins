@@ -22,7 +22,7 @@ system(f"mkdir -p {join(resource_path, 'group_wordcloud')}")
 lock = asyncio.Lock()
 crontab = croniter('5 0 * * *', beijingnow())
 # test
-crontab = croniter('*/5 * * * *', beijingnow())
+crontab = croniter('*/2 * * * *', beijingnow())
 crontab_next = crontab.get_next(datetime)
 
 with open(join(resource_path, 'group_enable.json'), 'r') as f:
@@ -48,7 +48,7 @@ async def gen_wordcloud():
                             for text in text_list:
                                 text = text.strip()
                                 if text:
-                                    jbc = list(jieba.cut())
+                                    jbc = list(jieba.cut(text))
                                     words = [word for word in jbc if word not in stopwords]
                                     word_list.extend(words)
                             if not word_list:
