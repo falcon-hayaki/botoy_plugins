@@ -4,6 +4,7 @@ import json
 import requests
 import traceback
 from os.path import join, exists
+from os import system
 from croniter import croniter
 from datetime import datetime, timezone
 import jieba
@@ -14,6 +15,9 @@ from botoy import mark_recv, ctx, action, file_to_base64
 resource_path = 'resources/wordcloud'
 from utils.tz import beijingnow
 from utils import fileio
+
+system(f"mkdir -p {join(resource_path, 'chat_history')}")
+system(f"mkdir -p {join(resource_path, 'group_wordcloud')}")
 
 lock = asyncio.Lock()
 crontab = croniter('5 0 * * *', beijingnow())
