@@ -68,6 +68,7 @@ async def gen_wordcloud():
                                 wordcloud.to_file(img_path)
                                 t = f"[测试版]今日词云已送达\n今日你群共聊了{len(text_list)}句话"
                                 await action.sendGroupPic(group=group_id, text=t, base64=file_to_base64(img_path))
+                            await fileio.clear_file(file_path)
                     except Exception as e:
                         print(e, traceback.format_exc())
                         t = f'twitter tl scheduler error\group_id: {group_id}\ntraceback: {traceback.format_exc()}'

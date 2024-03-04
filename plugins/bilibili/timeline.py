@@ -101,6 +101,7 @@ async def bili_dynamic_timeline():
                         print(e, traceback.format_exc())
                         t = f'bili_dynamic_timeline scheduler error\nuid: {uid}\ntraceback: {traceback.format_exc()}'
                         await action.sendGroupText(group=1014696092, text=t)
+                        await asyncio.sleep(60)
                         
                 data = await fileio.read_json(join(resource_path, "data.json"))
                 uid_to_del = []
