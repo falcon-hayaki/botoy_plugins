@@ -18,6 +18,11 @@ async def read_txt(path: str):
         data = await f.read()
     return data
 
+async def read_lines(path: str):
+    async with aiofiles.open(path, 'r') as f:
+        data = await f.readlines()
+    return data
+
 async def addline(path: str, line: str):
     async with aiofiles.open(path, 'a+') as f:
         await f.write(line)
