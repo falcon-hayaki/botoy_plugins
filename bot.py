@@ -4,6 +4,4 @@ import time
 bot.load_plugins()
 bot.print_receivers()
 
-while True:
-    bot.run()
-    time.sleep(5)
+bot.run()
