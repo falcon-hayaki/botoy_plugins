@@ -11,8 +11,8 @@ from utils import fileio
 from .draw import Draw
 
 async def hanayori_fortune():
-    if msg := ctx.g and msg.from_user != jconfig.qq:
-        if msg.text and msg.text.strip() in ['抽签', '抽签签']:
+    if msg := ctx.g:
+        if msg.text and msg.from_user != jconfig.qq and msg.text.strip() in ['抽签', '抽签签']:
             texts = await fileio.read_json(join(resource_path, 'fortune/copywriting.json'))
             titles = await fileio.read_json(join(resource_path, 'fortune/goodLuck.json'))
             now = datetime.now(tz=timezone("Asia/Shanghai"))

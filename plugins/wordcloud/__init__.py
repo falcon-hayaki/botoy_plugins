@@ -29,7 +29,7 @@ with open(join(resource_path, 'group_enable.json'), 'r') as f:
 
 async def gen_wordcloud():
     global lock, crontab, crontab_next, group_enable
-    if msg := ctx.g and msg.from_user != jconfig.qq and not lock.locked():
+    if msg := ctx.g and not lock.locked():
         async with lock:
             if beijingnow() >= crontab_next:
                 # 停用词
@@ -79,8 +79,8 @@ mark_recv(gen_wordcloud)
 
 async def log_chat():
     global group_enable
-    if msg := ctx.__getattribute__:
-        if msg.from_group in group_enable:
+    if msg := ctx.g:
+        if msg.from_user != jconfig.qq and msg.from_group in group_enable:
             msg_text = msg.text + '\n'
             await fileio.addline(join(resource_path, f'chat_history/{msg.from_group}.txt'), msg_text)
 mark_recv(log_chat)

@@ -8,8 +8,8 @@ from utils.tz import SHA_TZ
 tweet_url_rule = 'https:\/\/(?:x|twitter)\.com\/[a-zA-Z0-9_]+\/status\/([0-9]+).*'
 
 async def get_tweet():
-    if msg := ctx.g and msg.from_user != jconfig.qq:
-        if msg.text and re.match(tweet_url_rule, msg.text.strip()):
+    if msg := ctx.g:
+        if msg.text and msg.from_user != jconfig.qq and re.match(tweet_url_rule, msg.text.strip()):
             re_res = re.match(tweet_url_rule, msg.text.strip())
             tid = re_res.groups()[0]
             res = tm.get_tweet_detail(tid)
