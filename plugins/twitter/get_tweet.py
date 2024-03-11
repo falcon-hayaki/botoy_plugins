@@ -1,6 +1,6 @@
 import re
 from dateutil import parser
-from botoy import ctx, S, action
+from botoy import ctx, S, action, jconfig
 
 from . import tm
 from utils.tz import SHA_TZ
@@ -8,7 +8,7 @@ from utils.tz import SHA_TZ
 tweet_url_rule = 'https:\/\/(?:x|twitter)\.com\/[a-zA-Z0-9_]+\/status\/([0-9]+).*'
 
 async def get_tweet():
-    if msg := ctx.g:
+    if msg := ctx.g and msg.from_user != jconfig.qq:
         if msg.text and re.match(tweet_url_rule, msg.text.strip()):
             re_res = re.match(tweet_url_rule, msg.text.strip())
             tid = re_res.groups()[0]

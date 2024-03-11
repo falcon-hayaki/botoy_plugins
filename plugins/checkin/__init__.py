@@ -2,7 +2,7 @@ import asyncio
 import copy
 from croniter import croniter
 from datetime import datetime, timezone
-from botoy import mark_recv, ctx, action
+from botoy import mark_recv, ctx, action, jconfig
 
 from utils.tz import beijingnow
 
@@ -12,7 +12,7 @@ crontab_next = crontab.get_next(datetime)
 
 async def checkin():
     global lock, crontab, crontab_next
-    if msg := ctx.g and not lock.locked():
+    if msg := ctx.g and msg.from_user != jconfig.qq and not lock.locked():
         async with lock:
             if beijingnow() >= crontab_next:
                 await action.sendGroupText(1014696092, '签到')

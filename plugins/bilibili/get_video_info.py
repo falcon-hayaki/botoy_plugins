@@ -2,7 +2,7 @@ import re
 import traceback
 from datetime import datetime
 from dateutil import parser
-from botoy import ctx, S, action
+from botoy import ctx, S, action, jconfig
 
 from . import bm
 from utils.tz import SHA_TZ
@@ -12,7 +12,7 @@ bv_rule = r'BV[a-zA-Z0-9_]+'
 
 async def get_video_info():
     global video_url_rule, bv_rule
-    if msg := ctx.g:
+    if msg := ctx.g and msg.from_user != jconfig.qq:
         if msg.text and (re.match(video_url_rule, msg.text.strip()) or re.match(bv_rule, msg.text.strip())):
             video_url_res = re.match(video_url_rule, msg.text.strip())
             bv_res = re.match(bv_rule, msg.text.strip())

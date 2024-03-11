@@ -6,7 +6,7 @@ from os.path import join
 from croniter import croniter
 from datetime import datetime, timedelta
 from dateutil import parser
-from botoy import ctx, action
+from botoy import ctx, action, jconfig
 
 resource_path = 'resources/bili_dynamic'
 from . import bm
@@ -19,7 +19,7 @@ crontab_next = crontab.get_next(datetime)
 
 async def bili_dynamic_timeline():
     global lock, crontab, crontab_next, resource_path
-    if msg := ctx.g and not lock.locked():
+    if msg := ctx.g and msg.from_user != jconfig.qq and not lock.locked():
         async with lock:
             if beijingnow() >= crontab_next:
                 subscribes = await fileio.read_json(join(resource_path, 'subscribes.json'))
