@@ -1,0 +1,1 @@
+supervisorctl -c tools/supervisor/start.conf start botoy
