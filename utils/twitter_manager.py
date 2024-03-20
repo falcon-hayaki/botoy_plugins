@@ -206,26 +206,27 @@ class TwitterManager():
 # for test
 if __name__ == '__main__':
     tm = TwitterManager()
-    # res = tm.get_user_info('gume0612')
-    # print(res.status_code, res.json())
+    res = tm.get_user_info('gume0612')
+    print(res.status_code, res.json())
     # res = res.json()
     # print(tm.parse_user_info(res))
     # uid = res['data']['user']['result']['rest_id']
     # res = tm.get_user_timeline(uid)
     # print(res.status_code, res.json())
     # print(tm.parse_timeline(res.json()))
-    res = tm.get_tweet_detail('1675777787368722433')
+    
+    # res = tm.get_tweet_detail('1675777787368722433')
     # print(res.status_code, res.json())
-    tdata, user_info = tm.parse_tweet_detail(res.json())
-    tweet_type = tdata['tweet_type']
-    if tweet_type == 'default':
-        imgs = tdata.get('imgs')
-    elif tweet_type == 'retweet':
-        retweet_data = tdata['retweet_data']
-        imgs = retweet_data['data'].get('imgs')
-    elif tweet_type == 'quote':
-        quote_data = tdata['quote_data']
-        imgs = quote_data['data'].get('imgs')
-    print(tdata)
-    if imgs:
-        print(imgs)
+    # tdata, user_info = tm.parse_tweet_detail(res.json())
+    # tweet_type = tdata['tweet_type']
+    # if tweet_type == 'default':
+    #     imgs = tdata.get('imgs')
+    # elif tweet_type == 'retweet':
+    #     retweet_data = tdata['retweet_data']
+    #     imgs = retweet_data['data'].get('imgs')
+    # elif tweet_type == 'quote':
+    #     quote_data = tdata['quote_data']
+    #     imgs = quote_data['data'].get('imgs')
+    # print(tdata)
+    # if imgs:
+    #     print(imgs)
