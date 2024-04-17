@@ -3,6 +3,7 @@ import copy
 import json
 import requests
 import traceback
+import re
 from os.path import join, exists
 from os import system
 from croniter import croniter
@@ -77,11 +78,21 @@ async def gen_wordcloud():
                 crontab_next = crontab.get_next(datetime)
 mark_recv(gen_wordcloud)
 
+def remove_abstract_content(text:str):
+    if text.startswith('{') and text.endswith('}'):
+        return ''
+    link_pattern = re.compile(r'https?://\S+|www\.\S+')
+    text = link_pattern.sub('', text)
+    mention_pattern = re.compile(r'@\S+\s?')
+    text = mention_pattern.sub('', text)
+    return text
 async def log_chat():
     global group_enable
     if msg := ctx.g:
         if msg.from_user != jconfig.qq and msg.from_group in group_enable:
-            msg_text = msg.text + '\n'
-            await fileio.addline(join(resource_path, f'chat_history/{msg.from_group}.txt'), msg_text)
+            msg_text = remove_abstract_content(msg.text)
+            if msg_text:
+                msg_text = msg_text + '\n'
+                await fileio.addline(join(resource_path, f'chat_history/{msg.from_group}.txt'), msg_text)
 mark_recv(log_chat)
             
