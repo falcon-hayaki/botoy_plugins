@@ -81,6 +81,8 @@ mark_recv(gen_wordcloud)
 def remove_abstract_content(text:str):
     if text.startswith('{') and text.endswith('}'):
         return ''
+    if text.startswith('<') and text.endswith('>'):
+        return ''
     link_pattern = re.compile(r'https?://\S+|www\.\S+')
     text = link_pattern.sub('', text)
     mention_pattern = re.compile(r'@\S+\s?')
