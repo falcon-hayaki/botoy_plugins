@@ -48,9 +48,12 @@ async def gen_wordcloud():
                             for text in text_list:
                                 text = text.strip()
                                 if text:
-                                    jbc = list(jieba.cut(text))
-                                    words = [word for word in jbc if word not in stopwords]
-                                    word_list.extend(words)
+                                    # 分词
+                                    # jbc = list(jieba.cut(text))
+                                    # words = [word for word in jbc if word not in stopwords]
+                                    # word_list.extend(words)
+                                    # 不分词
+                                    word_list.append(text)
                             if not word_list:
                                 t = '本日你群一句正经话没有，服了'
                                 await action.sendGroupText(group=group_id, text=t)
@@ -83,10 +86,16 @@ def remove_abstract_content(text:str):
         return ''
     if text.startswith('<') and text.endswith('>'):
         return ''
+    # 排除链接
     link_pattern = re.compile(r'https?://\S+|www\.\S+')
     text = link_pattern.sub('', text)
-    mention_pattern = re.compile(r'@\S+\s?')
-    text = mention_pattern.sub('', text)
+    # 排除@ 
+    # NOTE: 由于@的名字中若出现空格将无法完整剔除，
+    #       于是将包含@的整句话直接排除掉
+    # mention_pattern = re.compile(r'@\S+\s?')
+    # text = mention_pattern.sub('', text)
+    if '@' in text:
+        return ''
     return text
 async def log_chat():
     global group_enable
