@@ -23,8 +23,8 @@ system(f"mkdir -p {join(resource_path, 'chat_history')}")
 system(f"mkdir -p {join(resource_path, 'group_wordcloud')}")
 
 lock = asyncio.Lock()
-# crontab = croniter('5 0 * * *', beijingnow())
-crontab = croniter('*/2 * * * *', beijingnow())
+crontab = croniter('5 0 * * *', beijingnow())
+# crontab = croniter('*/2 * * * *', beijingnow())
 crontab_next = crontab.get_next(datetime)
 
 with open(join(resource_path, 'group_enable.json'), 'r') as f:
@@ -49,8 +49,8 @@ async def gen_wordcloud():
                     colors = ImageColorGenerator(mask)
                 
                 for group_id in group_enable:
-                    if group_id != 723979982:
-                        continue
+                    # if group_id != 723979982:
+                    #     continue
                     try:
                         file_path = join(resource_path, f'chat_history/{group_id}.txt')
                         if exists(file_path):
@@ -87,7 +87,7 @@ async def gen_wordcloud():
                                 wordcloud.to_file(img_path)
                                 t = f"[测试版]今日词云已送达\n今日你群共聊了{len(text_list)}句话"
                                 await action.sendGroupPic(group=group_id, text=t, base64=file_to_base64(img_path))
-                            # await fileio.clear_file(file_path)
+                            await fileio.clear_file(file_path)
                     except Exception as e:
                         print(e, traceback.format_exc())
                         t = f'twitter tl scheduler error\group_id: {group_id}\ntraceback: {traceback.format_exc()}'
