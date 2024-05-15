@@ -166,6 +166,13 @@ class BiliManager():
                 dynamic_parsed['text'] += orig_parsed['text']
                 dynamic_parsed['imgs'] += orig_parsed['imgs']
                 dynamic_parsed['links'] += orig_parsed['links']
+        # 文章动态
+        elif dynamic_type == 'DYNAMIC_TYPE_ARTICLE':
+            major = module_dynamic.get('major', {})
+            opus = major.get('opus', {})
+            dynamic_parsed['text'] += f"标题：{opus.get('title', '')}\n"
+            dynamic_parsed['text'] += f"摘要：{opus.get('summary', {}).get('text')}\n"
+            dynamic_parsed['imgs'] += [p.get('url') for p in opus.get('pics')]
         # 不作处理的动态
         ## 直播动态
         elif dynamic_type in ['DYNAMIC_TYPE_LIVE_RCMD']:
@@ -245,9 +252,9 @@ class Wbi():
 if __name__ == '__main__':
     bm = BiliManager()
     # print(bm.get_live_info(591194).json())
-    print(bm.get_dynamic_list(686647628).json())
-    # with open('test.json', 'w') as f:
-    #     json.dump(bm.get_dynamic_list(3546626599684797).json(), f)
+    # print(bm.get_dynamic_list(3493265644980448).json())
+    with open('test.json', 'w') as f:
+        json.dump(bm.get_dynamic_list(3493265644980448).json(), f, ensure_ascii=False)
     # print(bm.get_user_info(3546626599684797).json())
     # print(bm.get_user_card(3546626599684797).json())
     # print(bm.get_video_info('BV1aw411X7hx').json())
