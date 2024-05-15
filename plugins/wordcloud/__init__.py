@@ -10,7 +10,7 @@ from os import system, listdir
 from croniter import croniter
 from datetime import datetime, timezone
 import jieba
-from numpy import np
+import numpy as np
 from wordcloud import WordCloud, STOPWORDS, ImageColorGenerator
 from PIL import Image
 from botoy import mark_recv, ctx, action, file_to_base64, jconfig
