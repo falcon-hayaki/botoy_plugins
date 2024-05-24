@@ -23,7 +23,7 @@ system(f"mkdir -p {join(resource_path, 'chat_history')}")
 system(f"mkdir -p {join(resource_path, 'group_wordcloud')}")
 
 lock = asyncio.Lock()
-crontab = croniter('5 0 * * *', beijingnow())
+crontab = croniter('0 15 * * *', beijingnow())
 # crontab = croniter('*/2 * * * *', beijingnow())
 crontab_next = crontab.get_next(datetime)
 
