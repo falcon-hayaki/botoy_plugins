@@ -78,7 +78,7 @@ async def gen_wordcloud():
                                     width=800,
                                     max_font_size=233,
                                     stopwords=stopwords,
-                                    mask=mask,
+                                    # mask=mask,    # 使用图片萌蒙版
                                     color_func=colors,
                                     collocations=False,
                                     font_path=join(resource_path, 'HarmonyOS.ttf'),
