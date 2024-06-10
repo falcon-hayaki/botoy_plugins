@@ -74,9 +74,9 @@ async def gen_wordcloud():
                                 wordcloud = WordCloud(
                                     background_color="white",
                                     max_words=2000,
-                                    height=1080,
-                                    width=1740,
-                                    max_font_size=120,
+                                    height=540,
+                                    width=870,
+                                    max_font_size=60,
                                     stopwords=stopwords,
                                     # mask=mask,    # 使用图片萌蒙版
                                     color_func=colors,
