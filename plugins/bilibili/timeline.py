@@ -32,12 +32,14 @@ async def bili_dynamic_timeline():
                             card = bm.get_user_card(uid).json()
                             user_info = bm.parse_user_info(info, card)
                             data[uid] = copy.deepcopy(user_info)
+                            await fileio.write_json(join(resource_path, "data.json"), data)
                             timeline_row = bm.get_dynamic_list(uid).json()
                             dynamic_id_list, dynamic_data = bm.parse_timeline(timeline_row)
                             if dynamic_id_list is None:
                                 raise ValueError(f'tl value error: {timeline_row}')
                             data[uid]['dynamic_id_list'] = dynamic_id_list
                             data[uid]['dynamic_data'] = dynamic_data
+                            await fileio.write_json(join(resource_path, "data.json"), data)
                         # 检查更新
                         else:
                             user_info = bm.parse_user_info(bm.get_user_info(uid).json(), bm.get_user_card(uid).json())
@@ -71,6 +73,7 @@ async def bili_dynamic_timeline():
                                             t = f"{data[uid]['name']}更新了{k}\n从\n{data[uid][k]}\n更改为\n{v}"
                                             await action.sendGroupText(group=group, text=t)
                                     data[uid][k] = v
+                            await fileio.write_json(join(resource_path, "data.json"), data)
                             timeline_row = bm.get_dynamic_list(uid).json()
                             dynamic_id_list, dynamic_data = bm.parse_timeline(timeline_row)
                             if dynamic_id_list is None:
@@ -95,7 +98,7 @@ async def bili_dynamic_timeline():
                                             await action.sendGroupText(group=group, text=t)
                             data[uid]['dynamic_id_list'] = dynamic_id_list
                             data[uid]['dynamic_data'] = dynamic_data
-                        await fileio.write_json(join(resource_path, "data.json"), data)
+                            await fileio.write_json(join(resource_path, "data.json"), data)
                         await asyncio.sleep(5)
                     except Exception as e:
                         print(e, traceback.format_exc())
