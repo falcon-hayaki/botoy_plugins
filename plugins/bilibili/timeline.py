@@ -32,6 +32,8 @@ async def bili_dynamic_timeline():
                             card = bm.get_user_card(uid).json()
                             user_info = bm.parse_user_info(info, card)
                             data[uid] = copy.deepcopy(user_info)
+                            data[uid]['dynamic_id_list'] = []
+                            data[uid]['dynamic_data'] = {}
                             await fileio.write_json(join(resource_path, "data.json"), data)
                             timeline_row = bm.get_dynamic_list(uid).json()
                             dynamic_id_list, dynamic_data = bm.parse_timeline(timeline_row)
