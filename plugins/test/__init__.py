@@ -1,4 +1,8 @@
-from botoy import ctx, S, mark_recv, jconfig
+import requests
+import base64
+from botoy import ctx, S, mark_recv, jconfig, action
+
+from utils.media_processing import download_from_url_and_convert_to_base64
 
 async def hello():
     if msg := (ctx.g or ctx.f):
@@ -9,9 +13,19 @@ async def debug():
     if msg := ctx.g:
         if msg.from_group == 1014696092 and msg.from_user != jconfig.qq:
             if msg.images:
-                await S.image([img.FileMd5 for img in msg.images], text=msg.text)
+                img_base64_list = []
+                for img in msg.images:
+                    resp_code, img_base64 = download_from_url_and_convert_to_base64(img.Url)
+                    if resp_code != 200:
+                        await S.text('发送失败')
+                        await action.sendGroupText(1014696092, 'err code: {}, text: {}'.format(resp_code, img_base64))
+                        return
+                    else:
+                        img_base64_list.append(img_base64)
+                await S.image(img_base64_list, text=msg.text)
             else:
                 await S.text(msg.text)
 
 mark_recv(hello)
 mark_recv(debug)
+
