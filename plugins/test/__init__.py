@@ -8,7 +8,10 @@ async def hello():
 async def debug():
     if msg := ctx.g:
         if msg.from_group == 1014696092 and msg.from_user != jconfig.qq:
-            await S.text('text: {}\nimg: {}\nmsg_type: {}'.format(msg.text, str(msg.images), msg.msg_type))
+            if msg.images:
+                await S.image([img.FileMd5 for img in msg.images], text=msg.text)
+            else:
+                await S.text(msg.text)
 
 mark_recv(hello)
 mark_recv(debug)
