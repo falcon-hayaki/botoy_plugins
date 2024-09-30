@@ -11,3 +11,4 @@ async def debug():
             await S.text('text: {}\nimg: {}\n'.format(msg.text, str(msg.images), msg.msg_type))
 
 mark_recv(hello)
+mark_recv(debug)
