@@ -207,12 +207,13 @@ class TwitterManager():
 if __name__ == '__main__':
     tm = TwitterManager()
     res = tm.get_user_info('gume0612')
-    print(res.status_code, res.json())
-    # res = res.json()
-    # print(tm.parse_user_info(res))
-    # uid = res['data']['user']['result']['rest_id']
-    # res = tm.get_user_timeline(uid)
     # print(res.status_code, res.json())
+    res = res.json()
+    # print(tm.parse_user_info(res))
+    uid = res['data']['user']['result']['rest_id']
+    res = tm.get_user_timeline(uid)
+    print(res.text)
+    print(res.status_code, res.json())
     # print(tm.parse_timeline(res.json()))
     
     # res = tm.get_tweet_detail('1675777787368722433')
