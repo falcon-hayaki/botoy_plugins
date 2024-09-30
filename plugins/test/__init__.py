@@ -8,7 +8,7 @@ async def hello():
 async def debug():
     if msg := ctx.g:
         if msg.from_group == 1014696092 and msg.from_user != jconfig.qq:
-            await S.text('text: {}\nimg: {}\n'.format(msg.text, str(msg.images), msg.msg_type))
+            await S.text('text: {}\nimg: {}\nmsg_type: {}'.format(msg.text, str(msg.images), msg.msg_type))
 
 mark_recv(hello)
 mark_recv(debug)
