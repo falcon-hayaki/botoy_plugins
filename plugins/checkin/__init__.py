@@ -19,4 +19,4 @@ async def checkin():
                 await action.sendGroupText(856337734, '签到')
                 crontab_next = crontab.get_next(datetime)
 
-mark_recv(checkin)
+# mark_recv(checkin)
