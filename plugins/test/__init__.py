@@ -22,7 +22,7 @@ async def debug():
                         return
                     else:
                         img_base64_list.append(img_base64)
-                await S.image(img_base64_list, text=msg.text)
+                await action.sendGroupPic(msg.from_group, text=msg.text, base64=img_base64_list)
             else:
                 await S.text(msg.text)
 
