@@ -7,7 +7,7 @@ from db import db
 
 async def drop_bottle():
     if msg := ctx.g:
-        if msg.from_group == 1014696092 and msg.text.startswith('扔漂流瓶') and msg.from_user != jconfig.qq:
+        if msg.text.startswith('扔漂流瓶') and msg.from_user != jconfig.qq:
             bottle_text = msg.text[4:].strip()
             bottle_imgs = []
             if msg.images:
@@ -34,7 +34,7 @@ async def drop_bottle():
 
 async def collect_bottle():
     if msg := ctx.g:
-        if msg.from_group == 1014696092 and msg.text == '捡漂流瓶' and msg.from_user != jconfig.qq:
+        if msg.text == '捡漂流瓶' and msg.from_user != jconfig.qq:
             bottle_data = db.random_bottle_message()
             if not bottle_data:
                 await S.text('海里根本没漂流瓶，我漂流瓶呢？')
