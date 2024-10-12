@@ -54,6 +54,7 @@ async def collect_bottle():
                 except:
                     bottle_imgs = []
                 if bottle_imgs:
+                    print(bottle_imgs)
                     await action.sendGroupPic(msg.from_group, text=t, base64=bottle_imgs)
                 else:
                     await S.text(t)
