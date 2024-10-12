@@ -8,7 +8,7 @@ from db import db
 async def drop_bottle():
     if msg := ctx.g:
         if msg.from_group == 1014696092 and msg.text.startswith('扔漂流瓶') and msg.from_user != jconfig.qq:
-            bottle_text = msg.text[3:].strip()
+            bottle_text = msg.text[4:].strip()
             bottle_imgs = []
             if msg.images:
                 for img in msg.images:
