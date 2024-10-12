@@ -11,12 +11,13 @@ async def drop_bottle():
         if msg.from_group == 1014696092 and msg.text.startswith('扔漂流瓶') and msg.from_user != jconfig.qq:
             bottle_text = msg.text[3:].strip()
             bottle_imgs = []
-            for img in msg.images:
-                resp_code, img_base64 = download_from_url_and_convert_to_base64(img.Url)
-                if resp_code != 200:
-                    continue
-                else:
-                    bottle_imgs.append(img_base64)
+            if msg.images:
+                for img in msg.images:
+                    resp_code, img_base64 = download_from_url_and_convert_to_base64(img.Url)
+                    if resp_code != 200:
+                        continue
+                    else:
+                        bottle_imgs.append(img_base64)
             if not bottle_text and not bottle_imgs:
                 await S.text('好像什么也没有发生...')
                 return
