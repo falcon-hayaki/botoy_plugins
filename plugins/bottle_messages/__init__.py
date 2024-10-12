@@ -17,7 +17,6 @@ async def drop_bottle():
                         continue
                     else:
                         bottle_imgs.append(img_base64)
-                await S.text(str(bottle_imgs))
             if not bottle_text and not bottle_imgs:
                 await S.text('好像什么也没有发生...')
                 return
@@ -55,7 +54,6 @@ async def collect_bottle():
                 except:
                     bottle_imgs = []
                 if bottle_imgs:
-                    await S.text(str(bottle_imgs))
                     await action.sendGroupPic(msg.from_group, text=t, base64=bottle_imgs)
                 else:
                     await S.text(t)
