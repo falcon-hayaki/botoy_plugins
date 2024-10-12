@@ -1,4 +1,3 @@
-import uuid
 import json
 from datetime import datetime
 from botoy import ctx, S, mark_recv, jconfig, action
@@ -21,9 +20,7 @@ async def drop_bottle():
             if not bottle_text and not bottle_imgs:
                 await S.text('好像什么也没有发生...')
                 return
-            bottle_id = str(uuid.uuid4())
             data = dict(
-                id=bottle_id,
                 user_id=msg.from_user,
                 user_name=msg.from_user_name,
                 group_id=msg.from_group,
