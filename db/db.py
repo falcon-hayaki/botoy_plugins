@@ -22,7 +22,7 @@ class DB(
             group_name TEXT,
             text TEXT,
             imgs TEXT,  -- 使用 JSON 存储列表
-            time DATETIME
+            time TEXT   -- %Y-%m-%d %H:%M:%S
         )
         ''')
         self.conn.commit()
