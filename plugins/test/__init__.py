@@ -27,5 +27,5 @@ async def debug():
                 await S.text(msg.text)
 
 mark_recv(hello)
-mark_recv(debug)
+# mark_recv(debug)
 

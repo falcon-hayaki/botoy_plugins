@@ -40,13 +40,14 @@ async def collect_bottle():
                 await S.text('海里根本没漂流瓶，我漂流瓶呢？')
                 return
             else:
-                t = '你捡到了由{}({})从{}({})在{}扔出的漂流瓶，上面写着：\n'.format(
-                    bottle_data['user_name'],
-                    bottle_data['user_id'],
-                    bottle_data['group_name'],
-                    bottle_data['group_id'],
-                    bottle_data['time'],
-                )
+                # t = '你捡到了由{}({})从{}({})在{}扔出的漂流瓶，上面写着：\n'.format(
+                #     bottle_data['user_name'],
+                #     bottle_data['user_id'],
+                #     bottle_data['group_name'],
+                #     bottle_data['group_id'],
+                #     bottle_data['time'],
+                # )
+                t = '漂流瓶上写着: \n'
                 if bottle_data['text']:
                     t += bottle_data['text']
                 try:
