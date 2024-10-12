@@ -58,8 +58,8 @@ class DB(
         self.conn.commit()
     
     @staticmethod
-    def datetime2str(datetime):
-        return datetime.strftime('%Y-%m-%d %H:%M:%S')
+    def datetime2str(time):
+        return datetime.strftime(time, '%Y-%m-%d %H:%M:%S')
     
     @staticmethod
     def str2datetime(datetime_str):
