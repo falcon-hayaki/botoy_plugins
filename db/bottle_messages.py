@@ -11,8 +11,9 @@ class BottleMessagesDB():
         self.cursor.execute(
             '''
             SELECT * 
-            WHERE group_id != {} OR user_id != {}
             FROM bottle_messages 
+            WHERE group_id != {} 
+                OR user_id != {}
             ORDER BY RANDOM() LIMIT 1
             '''.format(from_group, from_user)
         )
