@@ -25,7 +25,7 @@ class DB(
             text TEXT,
             imgs TEXT,  -- 使用 JSON 存储列表
             time TEXT   -- %Y-%m-%d %H:%M:%S
-        )
+        );
         
         -- quotes
         CREATE TABLE IF NOT EXISTS quotes (
