@@ -28,6 +28,8 @@ async def get_random_quote():
     if msg := ctx.g:
         if msg.text.startswith('/quote') and msg.from_user != jconfig.qq:
             user_key = msg.text[6:].strip()
+            if not user_key:
+                return
             quote_data = db.random_quote(msg.from_group, user_key)
             if not quote_data:
                 await S.text('没找到怪话喵！')
