@@ -3,7 +3,7 @@ import json
 import datetime
 
 class Quotes():
-    def random_quote(self, from_group: int, user_key: int):
+    def random_quote(self, from_group: int, user_key: str):
         '''
         随机返回一条语录
         '''
