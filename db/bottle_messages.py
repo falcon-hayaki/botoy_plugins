@@ -3,11 +3,19 @@ import json
 import datetime
 
 class BottleMessagesDB():
-    def random_bottle_message(self):
+    def random_bottle_message(self, from_group: int, from_user: int):
         '''
         随机pop一条漂流瓶信息
+        排除来自同一群或同一用户扔出的漂流瓶
         '''
-        self.cursor.execute('SELECT * FROM bottle_messages ORDER BY RANDOM() LIMIT 1')
+        self.cursor.execute(
+            '''
+            SELECT * 
+            WHERE group_id != {} OR user_id != {}
+            FROM bottle_messages 
+            ORDER BY RANDOM() LIMIT 1
+            '''.format(from_group, from_user)
+        )
         row = self.cursor.fetchone()
 
         if row:
