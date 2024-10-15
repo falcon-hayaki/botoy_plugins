@@ -2,9 +2,11 @@ import sqlite3
 from datetime import datetime
 
 from .bottle_messages import BottleMessagesDB
+from .quotes import Quotes
 
 class DB(
-    BottleMessagesDB
+    BottleMessagesDB,
+    Quotes
 ): 
     def __init__(self, db_name='botoy.db'):
         self.conn = sqlite3.connect(db_name)
@@ -22,6 +24,15 @@ class DB(
             group_name TEXT,
             text TEXT,
             imgs TEXT,  -- 使用 JSON 存储列表
+            time TEXT   -- %Y-%m-%d %H:%M:%S
+        )
+        
+        -- quotes
+        CREATE TABLE IF NOT EXISTS quotes (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_key str,
+            group_id INTEGER,
+            img TEXT,  -- 保存图片base64编码
             time TEXT   -- %Y-%m-%d %H:%M:%S
         )
         ''')
