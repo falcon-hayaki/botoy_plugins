@@ -11,10 +11,10 @@ class Quotes():
             '''
             SELECT * 
             FROM quotes 
-            WHERE group_id = {} 
-                AND user_key = {}
+            WHERE group_id = ? 
+            AND user_key = ?
             ORDER BY RANDOM() LIMIT 1
-            '''.format(from_group, user_key)
+            ''', (from_group, user_key)
         )
         row = self.cursor.fetchone()
 
