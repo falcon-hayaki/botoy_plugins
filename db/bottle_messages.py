@@ -13,7 +13,7 @@ class BottleMessagesDB():
             SELECT * 
             FROM bottle_messages 
             WHERE group_id != {} 
-                OR user_id != {}
+                AND user_id != {}
             ORDER BY RANDOM() LIMIT 1
             '''.format(from_group, from_user)
         )
