@@ -14,8 +14,11 @@ class DB(
         self.create_table()
         
     def create_table(self):
+        '''
+        初始化表
+        '''
+        # 漂流瓶
         self.cursor.execute('''
-        -- bottle_messages
         CREATE TABLE IF NOT EXISTS bottle_messages (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             user_id INTEGER,
@@ -26,8 +29,10 @@ class DB(
             imgs TEXT,  -- 使用 JSON 存储列表
             time TEXT   -- %Y-%m-%d %H:%M:%S
         );
+        ''')
         
-        -- quotes
+        # 群友语录
+        self.cursor.execute('''
         CREATE TABLE IF NOT EXISTS quotes (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             user_key TEXT,
