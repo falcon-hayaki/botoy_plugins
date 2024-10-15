@@ -30,7 +30,7 @@ class DB(
         -- quotes
         CREATE TABLE IF NOT EXISTS quotes (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_key str,
+            user_key TEXT,
             group_id INTEGER,
             img TEXT,  -- 保存图片base64编码
             time TEXT   -- %Y-%m-%d %H:%M:%S
