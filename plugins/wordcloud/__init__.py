@@ -13,7 +13,7 @@ import jieba
 import numpy as np
 from wordcloud import WordCloud, STOPWORDS, ImageColorGenerator
 from PIL import Image
-from botoy import mark_recv, ctx, action, file_to_base64, jconfig, async_run
+from botoy import mark_recv, ctx, action, file_to_base64, jconfig, async_run, to_async
 
 resource_path = 'resources/wordcloud'
 from utils.tz import beijingnow
@@ -30,9 +30,11 @@ crontab_next = crontab.get_next(datetime)
 with open(join(resource_path, 'group_enable.json'), 'r') as f:
     group_enable = json.load(f)
 
+@to_async
 def gen_wordcloud(word_list_str: str, wordcloud_data: dict, img_path: str):
     wordcloud = WordCloud(**wordcloud_data).generate(word_list_str)
     wordcloud.to_file(img_path)
+    
 async def gen_wordcloud():
     global lock, crontab, crontab_next, group_enable
     if msg := ctx.g and not lock.locked():
@@ -87,22 +89,9 @@ async def gen_wordcloud():
                                     font_path=join(resource_path, 'HarmonyOS.ttf'),
                                 )
                                 img_path = join(resource_path, f'group_wordcloud/{group_id}.png')
-                                await async_run(gen_wordcloud, word_list_str, wordcloud_data, img_path)
                                 
-                                # NOTE: 已集合到同步函数gen_wordcloud便于异步运行
-                                # wordcloud = WordCloud(
-                                #     background_color="white",
-                                #     max_words=2000,
-                                #     height=540,
-                                #     width=870,
-                                #     max_font_size=60,
-                                #     stopwords=stopwords,
-                                #     # mask=mask,    # 使用图片萌蒙版
-                                #     color_func=colors,
-                                #     collocations=False,
-                                #     font_path=join(resource_path, 'HarmonyOS.ttf'),
-                                # ).generate(word_list_str)
-                                # wordcloud.to_file(img_path)
+                                await gen_wordcloud(word_list_str, wordcloud_data, img_path)
+                                # await async_run(gen_wordcloud, word_list_str, wordcloud_data, img_path)
                                 
                                 t = f"[测试版]今日词云已送达\n今日你群共聊了{len(text_list)}句话"
                                 await action.sendGroupPic(group=group_id, text=t, base64=file_to_base64(img_path))
