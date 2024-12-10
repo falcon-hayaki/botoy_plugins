@@ -34,6 +34,11 @@ with open(join(resource_path, 'group_enable.json'), 'r') as f:
 def gen_wordcloud(word_list_str: str, wordcloud_data: dict, img_path: str):
     wordcloud = WordCloud(**wordcloud_data).generate(word_list_str)
     wordcloud.to_file(img_path)
+
+# 不使用异步
+def gen_wordcloud_sync(word_list_str: str, wordcloud_data: dict, img_path: str):
+    wordcloud = WordCloud(**wordcloud_data).generate(word_list_str)
+    wordcloud.to_file(img_path)
     
 async def gen_wordcloud():
     global lock, crontab, crontab_next, group_enable
@@ -90,8 +95,9 @@ async def gen_wordcloud():
                                 )
                                 img_path = join(resource_path, f'group_wordcloud/{group_id}.png')
                                 
-                                await gen_wordcloud(word_list_str, wordcloud_data, img_path)
-                                # await async_run(gen_wordcloud, word_list_str, wordcloud_data, img_path)
+                                gen_wordcloud_sync(word_list_str, wordcloud_data, img_path)
+                                # await gen_wordcloud(word_list_str, wordcloud_data, img_path)
+                                # await async_run(gen_wordcloud_sync, word_list_str, wordcloud_data, img_path)
                                 
                                 t = f"[测试版]今日词云已送达\n今日你群共聊了{len(text_list)}句话"
                                 await action.sendGroupPic(group=group_id, text=t, base64=file_to_base64(img_path))
