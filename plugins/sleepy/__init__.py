@@ -9,6 +9,7 @@ async def sleepy():
         if msg.text == '#hayaki似了没' and msg.from_user != jconfig.qq:
             url = 'http://sleepy.hayaki.icu/query'
             resp = requests.get(url)
+            print(resp.text)
             if resp.status_code == 200 and resp.json().get('success', False):
                 info = resp.json()['info']
                 await S.text("hayaki状态: {}\n{}".format(info['name'], info['desc']))
