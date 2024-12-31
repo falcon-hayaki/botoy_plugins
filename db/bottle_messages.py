@@ -20,6 +20,7 @@ class BottleMessagesDB():
         row = self.cursor.fetchone()
 
         if row:
+            print(row)
             column_names = [description[0] for description in self.cursor.description]
             row_dict = dict(zip(column_names, row))
             self.cursor.execute('DELETE FROM bottle_messages WHERE id = ?', (row_dict['id'],))
