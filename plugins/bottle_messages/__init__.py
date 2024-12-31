@@ -49,7 +49,7 @@ async def collect_bottle():
                 # )
                 t = '漂流瓶上写着: \n'
                 if bottle_data['text']:
-                    t += bottle_data['text']
+                    t += bottle_data['text'].encode("utf-8").decode("unicode_escape")
                 try:
                     bottle_imgs = json.loads(bottle_data['imgs'])
                 except:
