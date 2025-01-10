@@ -42,8 +42,8 @@ async def ytbtimeline():
                                 t = f"{live_info['name']}开播了\n"
                                 t += f"标题: {live_info['title']}\n"
                                 t += f"{live_info['description']}\n"
-                                published_at = parser.parse(live_info['publishedAt']).astimezone(SHA_TZ)
-                                t += f"直播时间: {published_at.strftime('%Y-%m-%d %H:%M:%S %Z')}\n"
+                                # published_at = parser.parse(live_info['publishedAt']).astimezone(SHA_TZ)
+                                # t += f"直播时间: {published_at.strftime('%Y-%m-%d %H:%M:%S %Z')}\n"
                                 imgs = live_info['thumbnail']
                                 for group in subscribes[uid]['groups']:
                                     await action.sendGroupPic(group=group, text=t, url=imgs)
