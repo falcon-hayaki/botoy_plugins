@@ -13,7 +13,7 @@ from utils.tz import beijingnow, SHA_TZ
 from utils import fileio
 
 lock = asyncio.Lock()
-crontab = croniter('*/5 * * * *', beijingnow())
+crontab = croniter('*/10 * * * *', beijingnow())
 crontab_next = crontab.get_next(datetime)
 
 async def ytbtimeline():
@@ -56,6 +56,9 @@ async def ytbtimeline():
                         await fileio.write_json(join(resource_path, "data.json"), data)
                         await asyncio.sleep(5)
                     except Exception as e:
+                        # 达到api配置限额
+                        if 'quota' in traceback.format_exc():
+                            crontab_next = [crontab.get_next(datetime) for _ in range(2)][-1]
                         print(e, traceback.format_exc())
                         t = f'youtube tl scheduler error\nuid: {uid}\ntraceback: {traceback.format_exc()}'
                         await action.sendGroupText(group=1014696092, text=t)
