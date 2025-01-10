@@ -9,31 +9,54 @@ class YoutubeManager():
         
         self.youtube = build('youtube', 'v3', developerKey=youtube_conf.get('api_key'))
 
-    def get_channel_id(self, handle: str):
+    def get_playlist_id(self, user_id: str, id_type: str):
         try:
-            request = self.youtube.channels().list(
-                part="snippet,contentDetails,statistics",
-                forHandle=handle
-            )
+            if id_type == 'handle':
+                request = self.youtube.channels().list(
+                    part="snippet,contentDetails,statistics",
+                    forHandle=user_id
+                )
+            elif id_type == 'id':
+                request = self.youtube.channels().list(
+                    part="snippet,contentDetails,statistics",
+                    id=user_id
+                )
             response = request.execute()
-            return 0, response['items'][0]['id']
+            return 0, response['items'][0]['contentDetails']['relatedPlaylists']['uploads']
         except Exception as e:
             traceback.print_exc()
             return 500, traceback.format_exc()
         
-    def check_live_stream(self, channel_id: str):
+    def get_playlist_video_ids(self, playlist_id: str):
         try:
-            request = self.youtube.search().list(
-                part="snippet",
-                channelId=channel_id,
-                eventType="live",
-                type="video"
+            request = self.youtube.playlistItems().list(
+                part="contentDetails",
+                playlistId=playlist_id,
+                maxResults=5
+            )
+            response = request.execute()
+            res = [i['contentDetails']['videoId'] for i in response['items']]
+            return 0, res
+        except Exception as e:
+            traceback.print_exc()
+            return 500, traceback.format_exc()
+        
+    def check_live_stream(self, video_id_list: list):
+        try:
+            request = self.youtube.videos().list(
+                part="snippet,liveStreamingDetails",
+                id=','.join(video_id_list)
             )
             response = request.execute()
             if not response['items']:
-                return 0, {}
-            res = {}
-            res_row = response['items'][0]['snippet']
+                return 0, {'name': 'none', 'liveBroadcastContent': 'none'}
+            for i in response['items']:
+                if i['snippet']['liveBroadcastContent'] in ['live', 'upcoming']:
+                    break
+            else:
+                i = response['items'][0]
+            res = {'liveStreamingDetails': i['liveStreamingDetails']}
+            res_row = i['snippet']
             res['name'] = res_row['channelTitle']
             res['title'] = res_row['title']
             res['description'] = res_row['description']

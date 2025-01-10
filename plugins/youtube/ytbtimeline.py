@@ -25,34 +25,50 @@ async def ytbtimeline():
                 for uid in subscribes:
                     try:
                         data = await fileio.read_json(join(resource_path, 'data.json'))
-                        # get real uid
-                        if subscribes[uid]['id_type'] == 'handle':
-                            code, real_uid = ym.get_channel_id(uid)
-                            if code != 0:
-                                raise ValueError(f'get_channel_id error: {uid} {real_uid}')
-                        else:
-                            real_uid = uid
+                        # get plaiylsit id
+                        code, playlist_id = ym.get_playlist_id(uid, subscribes[uid]['id_type'])
+                        if code != 0:
+                            raise ValueError(f'get_playlist_id error: {uid} {playlist_id}')
+                        # get video ids
+                        code, video_ids = ym.get_playlist_video_ids(playlist_id)
+                        if code != 0:
+                            raise ValueError(f'get_playlist_video_ids error: {uid} {video_ids}')
                         # get live stream info
-                        code, live_info = ym.check_live_stream(real_uid)
+                        code, live_info = ym.check_live_stream(video_ids)
                         if code != 0:
                             raise ValueError(f'check_live_stream error: {uid} {live_info}')
                         
                         if uid in data:
-                            if live_info and not data[uid]:
-                                t = f"{live_info['name']}开播了\n"
-                                t += f"标题: {live_info['title']}\n"
-                                t += f"{live_info['description']}\n"
-                                # published_at = parser.parse(live_info['publishedAt']).astimezone(SHA_TZ)
-                                # t += f"直播时间: {published_at.strftime('%Y-%m-%d %H:%M:%S %Z')}\n"
-                                imgs = live_info['thumbnail']
-                                for group in subscribes[uid]['groups']:
-                                    await action.sendGroupPic(group=group, text=t, url=imgs)
-                            elif not live_info and data[uid]:
-                                t = f"{data[uid]['name']}下播了"
-                                for group in subscribes[uid]['groups']:
-                                    await action.sendGroupText(group=group, text=t)
+                            if live_info['liveBroadcastContent'] != data[uid]:
+                                if live_info['liveBroadcastContent'] == 'live':
+                                    t = f"{live_info['name']}开播了\n"
+                                    t += f"标题: {live_info['title']}\n"
+                                    t += f"{live_info['description']}\n"
+                                    actualStartTime = parser.parse(live_info['liveStreamingDetails']['actualStartTime']).astimezone(SHA_TZ)
+                                    t += f"开始时间: {actualStartTime.strftime('%Y-%m-%d %H:%M:%S %Z')}\n"
+                                    imgs = live_info['thumbnail']
+                                    for group in subscribes[uid]['groups']:
+                                        await action.sendGroupPic(group=group, text=t, url=imgs)
+                                    data[uid] = 'live'
+                                elif live_info['liveBroadcastContent'] == 'upcoming':
+                                    t = f"{live_info['name']}设置了一个直播预约\n"
+                                    t += f"标题: {live_info['title']}\n"
+                                    t += f"{live_info['description']}\n"
+                                    scheduledStartTime = parser.parse(live_info['liveStreamingDetails']['scheduledStartTime']).astimezone(SHA_TZ)
+                                    t += f"开始时间: {scheduledStartTime.strftime('%Y-%m-%d %H:%M:%S %Z')}\n"
+                                    imgs = live_info['thumbnail']
+                                    for group in subscribes[uid]['groups']:
+                                        await action.sendGroupPic(group=group, text=t, url=imgs)
+                                elif live_info['liveBroadcastContent'] == 'none':
+                                    t = f"{live_info['name']}下播了"
+                                    for group in subscribes[uid]['groups']:
+                                        await action.sendGroupText(group=group, text=t)
+                                else:
+                                    t = f'未处理的直播状态: {live_info["liveBroadcastContent"]}\n请联系那个臭写bot的'
+                                    for group in subscribes[uid]['groups']:
+                                        await action.sendGroupText(group=group, text=t)
                                     
-                        data[uid] = copy.deepcopy(live_info)
+                        data[uid] = live_info['liveBroadcastContent']
                         await fileio.write_json(join(resource_path, "data.json"), data)
                         await asyncio.sleep(5)
                     except Exception as e:
