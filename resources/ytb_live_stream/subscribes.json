@@ -2,13 +2,31 @@
     "@QuonTama": {
         "id_type": "handle", 
         "groups": [
-            1014696092
+            799148704
         ]
     },
-    "@UTANOch": {
+    "@KaguraMea": {
         "id_type": "handle", 
         "groups": [
             1014696092
+        ]
+    },
+    "@BlueArchive_JP": {
+        "id_type": "handle", 
+        "groups": [
+            723979982
+        ]
+    },
+    "@Hanon_moco": {
+        "id_type": "handle", 
+        "groups": [
+            1087846478
+        ]
+    },
+    "@Kotoha_ktnh": {
+        "id_type": "handle", 
+        "groups": [
+            1087846478
         ]
     }
 }
