@@ -13,7 +13,7 @@ from utils.tz import beijingnow, SHA_TZ
 from utils import fileio
 
 lock = asyncio.Lock()
-crontab = croniter('*/5 * * * *', beijingnow())
+crontab = croniter('*/1 * * * *', beijingnow())
 crontab_next = crontab.get_next(datetime)
 
 async def ytbtimeline():
@@ -26,7 +26,7 @@ async def ytbtimeline():
                     try:
                         data = await fileio.read_json(join(resource_path, 'data.json'))
                         # get real uid
-                        if subscribes['uid']['id_type'] == 'handle':
+                        if subscribes[uid]['id_type'] == 'handle':
                             code, real_uid = ym.get_channel_id(uid)
                             if code != 0:
                                 raise ValueError(f'get_channel_id error: {uid} {real_uid}')
