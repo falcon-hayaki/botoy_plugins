@@ -59,6 +59,9 @@ async def ytbtimeline():
                         # 达到api配置限额
                         if 'quota' in traceback.format_exc():
                             crontab_next = [crontab.get_next(datetime) for _ in range(2)][-1]
+                            t = f'youtube tl scheduler error\nuid: {uid}\ntraceback: {traceback.format_exc()}'
+                            await action.sendGroupText(group=1014696092, text=t)
+                            return
                         print(e, traceback.format_exc())
                         t = f'youtube tl scheduler error\nuid: {uid}\ntraceback: {traceback.format_exc()}'
                         await action.sendGroupText(group=1014696092, text=t)
