@@ -13,3 +13,5 @@ werkzeug==1.0.1
 jieba
 paddlepaddle
 croniter
+atproto
+google-api-python-client
