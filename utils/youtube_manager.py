@@ -16,7 +16,6 @@ class YoutubeManager():
                 forHandle=handle
             )
             response = request.execute()
-            print(response)
             return 0, response['items'][0]['id']
         except Exception as e:
             traceback.print_exc()

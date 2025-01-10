@@ -50,7 +50,7 @@ async def ytbtimeline():
                             elif not live_info and data[uid]:
                                 t = f"{data[uid]['name']}下播了"
                                 for group in subscribes[uid]['groups']:
-                                    await action.sendFriendText(group=group, text=t)
+                                    await action.sendGroupText(group=group, text=t)
                                     
                         data[uid] = copy.deepcopy(live_info)
                         await fileio.write_json(join(resource_path, "data.json"), data)
