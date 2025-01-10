@@ -13,7 +13,7 @@ class YoutubeManager():
         try:
             request = self.youtube.channels().list(
                 part="snippet,contentDetails,statistics",
-                forUsername=handle
+                forHandle=handle
             )
             response = request.execute()
             print(response)
