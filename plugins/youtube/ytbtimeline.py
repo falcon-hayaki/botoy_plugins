@@ -5,7 +5,7 @@ from os.path import join
 from croniter import croniter
 from datetime import datetime, timedelta
 from dateutil import parser
-from botoy import ctx, action, jconfig
+from botoy import ctx, action, jconfig, S
 
 resource_path = 'resources/ytb_live_stream'
 from . import ym
@@ -26,9 +26,10 @@ async def ytbtimeline():
                     try:
                         data = await fileio.read_json(join(resource_path, 'data.json'))
                         # get plaiylsit id
-                        code, playlist_id = ym.get_playlist_id(uid, subscribes[uid]['id_type'])
+                        code, channel_details = ym.get_channel_details(uid, subscribes[uid]['id_type'])
                         if code != 0:
-                            raise ValueError(f'get_playlist_id error: {uid} {playlist_id}')
+                            raise ValueError(f'get_channel_details error: {uid} {channel_details}')
+                        playlist_id = channel_details['contentDetails']['relatedPlaylists']['uploads']
                         # get video ids
                         code, video_ids = ym.get_playlist_video_ids(playlist_id)
                         if code != 0:
@@ -43,7 +44,7 @@ async def ytbtimeline():
                                 if live_info['liveBroadcastContent'] == 'live':
                                     t = f"{live_info['name']}开播了\n"
                                     t += f"标题: {live_info['title']}\n"
-                                    t += f"{live_info['description']}\n"
+                                    # t += f"{live_info['description']}\n"
                                     actualStartTime = parser.parse(live_info['liveStreamingDetails']['actualStartTime']).astimezone(SHA_TZ)
                                     t += f"开始时间: {actualStartTime.strftime('%Y-%m-%d %H:%M:%S %Z')}\n"
                                     imgs = live_info['thumbnail']
@@ -53,7 +54,7 @@ async def ytbtimeline():
                                 elif live_info['liveBroadcastContent'] == 'upcoming':
                                     t = f"{live_info['name']}设置了一个直播预约\n"
                                     t += f"标题: {live_info['title']}\n"
-                                    t += f"{live_info['description']}\n"
+                                    # t += f"{live_info['description']}\n"
                                     scheduledStartTime = parser.parse(live_info['liveStreamingDetails']['scheduledStartTime']).astimezone(SHA_TZ)
                                     t += f"开始时间: {scheduledStartTime.strftime('%Y-%m-%d %H:%M:%S %Z')}\n"
                                     imgs = live_info['thumbnail']
@@ -93,3 +94,27 @@ async def ytbtimeline():
                 await fileio.write_json(join(resource_path, "data.json"), data)
                 
                 crontab_next = crontab.get_next(datetime)
+                
+async def ytbtimeline_subs():
+    if msg := ctx.g:
+        if msg.text.strip() in ['ytb订阅', '油管订阅'] and msg.from_user != jconfig.qq:
+            subscribes = await fileio.read_json(join(resource_path, 'subscribes.json'))
+            uid_list = [u for u, v in subscribes.items() if msg.from_group in v['groups']]
+            try:
+                t = ''
+                for idx, uid in enumerate(uid_list):
+                    code, channel_details = ym.get_channel_details(uid, subscribes[uid]['id_type'])
+                    if code != 0:
+                        raise ValueError(f'get_channel_details error: {uid} {channel_details}')
+                    t += f"{channel_details['snippet']['title']}({uid_list[idx]})\n"
+                if not t:
+                    t = '无'
+                t = f"已订阅的频道:\n{t}"
+            except Exception as e:
+                t = f'发生未知错误'
+                await S.text(t)
+                t = f'error in get_ytb_video: group={msg.from_group} text={msg.text}\n'
+                t += f'traceback: \n {traceback.format_exc()}'
+                await action.sendGroupText(group=1014696092, text=t)
+            else:
+                await S.text(t)

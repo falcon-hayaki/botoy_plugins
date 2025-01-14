@@ -9,7 +9,7 @@ class YoutubeManager():
         
         self.youtube = build('youtube', 'v3', developerKey=youtube_conf.get('api_key'))
 
-    def get_playlist_id(self, user_id: str, id_type: str):
+    def get_channel_details(self, user_id: str, id_type: str):
         try:
             if id_type == 'handle':
                 request = self.youtube.channels().list(
@@ -22,7 +22,7 @@ class YoutubeManager():
                     id=user_id
                 )
             response = request.execute()
-            return 0, response['items'][0]['contentDetails']['relatedPlaylists']['uploads']
+            return 0, response['items'][0]
         except Exception as e:
             traceback.print_exc()
             return 500, traceback.format_exc()
@@ -57,6 +57,26 @@ class YoutubeManager():
                 i = response['items'][0]
             res = {'liveStreamingDetails': i['liveStreamingDetails']}
             res_row = i['snippet']
+            res['name'] = res_row['channelTitle']
+            res['title'] = res_row['title']
+            res['description'] = res_row['description']
+            res['liveBroadcastContent'] = res_row['liveBroadcastContent']
+            res['publishedAt'] = res_row['publishedAt']
+            res['thumbnail'] = res_row['thumbnails'].get('high', res_row['thumbnails'].get('medium', res_row['thumbnails'].get('default', {})))['url']
+            return 0, res
+        except Exception as e:
+            traceback.print_exc()
+            return 500, traceback.format_exc()
+        
+    def get_video_details(self, video_id: str):
+        try:
+            request = self.youtube.videos().list(
+                part="snippet",
+                id=video_id
+            )
+            response = request.execute()
+            res = {}
+            res_row = response['items'][0]['snippet']
             res['name'] = res_row['channelTitle']
             res['title'] = res_row['title']
             res['description'] = res_row['description']
