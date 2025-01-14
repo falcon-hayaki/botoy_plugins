@@ -55,7 +55,7 @@ class YoutubeManager():
                     break
             else:
                 i = response['items'][0]
-            res = {'liveStreamingDetails': i['liveStreamingDetails']}
+            res = {'liveStreamingDetails': i.get('liveStreamingDetails', {})}
             res_row = i['snippet']
             res['name'] = res_row['channelTitle']
             res['title'] = res_row['title']
