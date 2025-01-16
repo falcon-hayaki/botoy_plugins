@@ -25,7 +25,7 @@ async def ytbtimeline():
                 for uid in subscribes:
                     try:
                         data = await fileio.read_json(join(resource_path, 'data.json'))
-                        if uid not in data:
+                        if uid not in data or not isinstance(data[uid], dict):
                             data[uid] = {}
                         # get plaiylsit id
                         now = datetime.now()
