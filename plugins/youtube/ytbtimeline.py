@@ -25,11 +25,19 @@ async def ytbtimeline():
                 for uid in subscribes:
                     try:
                         data = await fileio.read_json(join(resource_path, 'data.json'))
+                        if uid not in data:
+                            data[uid] = {}
                         # get plaiylsit id
-                        code, channel_details = ym.get_channel_details(uid, subscribes[uid]['id_type'])
-                        if code != 0:
-                            raise ValueError(f'get_channel_details error: {uid} {channel_details}')
-                        playlist_id = channel_details['contentDetails']['relatedPlaylists']['uploads']
+                        now = datetime.now()
+                        if 'playlist_id' not in data[uid] or (now - parser.parse(data[uid]['playlist_id_update_at']) > timedelta(days=1)):
+                            code, channel_details = ym.get_channel_details(uid, subscribes[uid]['id_type'])
+                            if code != 0:
+                                raise ValueError(f'get_channel_details error: {uid} {channel_details}')
+                            playlist_id = channel_details['contentDetails']['relatedPlaylists']['uploads']
+                            data[uid]['playlist_id'] = playlist_id
+                            data[uid]['playlist_id_update_at'] = now.strftime('%Y-%m-%d %H:%M:%S')
+                        else:
+                            playlist_id = data[uid]['playlist_id']
                         # get video ids
                         code, video_ids = ym.get_playlist_video_ids(playlist_id)
                         if code != 0:
@@ -39,8 +47,8 @@ async def ytbtimeline():
                         if code != 0:
                             raise ValueError(f'check_live_stream error: {uid} {live_info}')
                         
-                        if uid in data:
-                            if live_info['liveBroadcastContent'] != data[uid]:
+                        if 'live_status' in data[uid]:
+                            if live_info['liveBroadcastContent'] != data[uid]['live_status']:
                                 if live_info['liveBroadcastContent'] == 'live':
                                     t = f"{live_info['name']}开播了\n"
                                     t += f"标题: {live_info['title']}\n"
@@ -50,7 +58,6 @@ async def ytbtimeline():
                                     imgs = live_info['thumbnail']
                                     for group in subscribes[uid]['groups']:
                                         await action.sendGroupPic(group=group, text=t, url=imgs)
-                                    data[uid] = 'live'
                                 elif live_info['liveBroadcastContent'] == 'upcoming':
                                     t = f"{live_info['name']}设置了一个直播预约\n"
                                     t += f"标题: {live_info['title']}\n"
@@ -69,7 +76,7 @@ async def ytbtimeline():
                                     for group in subscribes[uid]['groups']:
                                         await action.sendGroupText(group=group, text=t)
                                     
-                        data[uid] = live_info['liveBroadcastContent']
+                        data[uid]['live_status'] = live_info['liveBroadcastContent']
                         await fileio.write_json(join(resource_path, "data.json"), data)
                         await asyncio.sleep(5)
                     except Exception as e:
