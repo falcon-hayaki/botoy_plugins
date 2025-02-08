@@ -13,6 +13,7 @@ async def sleepy():
                 info = resp.json()['info']
                 await S.text("hayaki状态: {}\n{}".format(info['name'], info['desc']))
             else:
+                print(resp.status_code, resp.text)
                 await S.text("发生了一点错误喵")
 
 mark_recv(sleepy)
