@@ -85,6 +85,7 @@ async def ytbtimeline():
                                         await action.sendGroupText(group=group, text=t)
                             for ltp in ldid_to_pop:
                                 data[uid]['live_status']['live'].pop(ltp)
+                            ldid_to_pop = []
                             for ldid, lddata in data[uid]['live_status']['upcoming'].items():
                                 if now > parser.parse(lddata['liveStreamingDetails']['scheduledStartTime']).replace(tzinfo=None):
                                     ldid_to_pop.append(ldid)
