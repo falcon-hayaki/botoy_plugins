@@ -87,7 +87,7 @@ async def ytbtimeline():
                                 data[uid]['live_status']['live'].pop(ltp)
                             ldid_to_pop = []
                             for ldid, lddata in data[uid]['live_status']['upcoming'].items():
-                                if now > parser.parse(lddata['liveStreamingDetails']['scheduledStartTime']).replace(tzinfo=None):
+                                if 'scheduledStartTime' not in lddata['liveStreamingDetails'] or now > parser.parse(lddata['liveStreamingDetails']['scheduledStartTime']).replace(tzinfo=None):
                                     ldid_to_pop.append(ldid)
                             for ltp in ldid_to_pop:
                                 data[uid]['live_status']['upcoming'].pop(ltp)
