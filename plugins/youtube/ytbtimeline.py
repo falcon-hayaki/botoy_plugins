@@ -47,36 +47,46 @@ async def ytbtimeline():
                         if code != 0:
                             raise ValueError(f'check_live_stream error: {uid} {live_info}')
                         
-                        if 'live_status' in data[uid]:
-                            if live_info['liveBroadcastContent'] != data[uid]['live_status']:
-                                if live_info['liveBroadcastContent'] == 'live':
-                                    t = f"{live_info['name']}开播了\n"
-                                    t += f"标题: {live_info['title']}\n"
-                                    # t += f"{live_info['description']}\n"
-                                    actualStartTime = parser.parse(live_info['liveStreamingDetails']['actualStartTime']).astimezone(SHA_TZ)
+                        if 'live_status' in data[uid] and isinstance(data[uid]['live_status'], dict):
+                            if not data[uid]['live_status'].get('live', None):
+                                data[uid]['live_status']['live'] = {}
+                            if not data[uid]['live_status'].get('upcoming', None):
+                                data[uid]['live_status']['upcoming'] = {}
+                                
+                            for lid, ldata in live_info['live'].items():
+                                if lid not in data[uid]['live_status']['live']:
+                                    data[uid]['live_status']['live'][lid] = ldata
+                                    t = f"{ldata['name']}开播了\n"
+                                    t += f"标题: {ldata['title']}\n"
+                                    actualStartTime = parser.parse(ldata['liveStreamingDetails']['actualStartTime']).astimezone(SHA_TZ)
                                     t += f"开始时间: {actualStartTime.strftime('%Y-%m-%d %H:%M:%S %Z')}\n"
-                                    imgs = live_info['thumbnail']
+                                    imgs = ldata['thumbnail']
                                     for group in subscribes[uid]['groups']:
                                         await action.sendGroupPic(group=group, text=t, url=imgs)
-                                elif live_info['liveBroadcastContent'] == 'upcoming':
-                                    t = f"{live_info['name']}设置了一个直播预约\n"
-                                    t += f"标题: {live_info['title']}\n"
-                                    # t += f"{live_info['description']}\n"
-                                    scheduledStartTime = parser.parse(live_info['liveStreamingDetails']['scheduledStartTime']).astimezone(SHA_TZ)
+                                if lid in data[uid]['live_status']['upcoming']:
+                                    del data[uid]['live_status']['upcoming'][lid]
+                            for lid, ldata in live_info['upcoming'].items():
+                                if lid not in data[uid]['live_status']['upcoming']:
+                                    data[uid]['live_status']['upcoming'][lid] = ldata
+                                    t = f"{ldata['name']}设置了一个直播预约\n"
+                                    t += f"标题: {ldata['title']}\n"
+                                    scheduledStartTime = parser.parse(ldata['liveStreamingDetails']['scheduledStartTime']).astimezone(SHA_TZ)
                                     t += f"开始时间: {scheduledStartTime.strftime('%Y-%m-%d %H:%M:%S %Z')}\n"
-                                    imgs = live_info['thumbnail']
+                                    imgs = ldata['thumbnail']
                                     for group in subscribes[uid]['groups']:
                                         await action.sendGroupPic(group=group, text=t, url=imgs)
-                                elif live_info['liveBroadcastContent'] == 'none':
-                                    t = f"{live_info['name']}下播了"
+                                        
+                            for ldid, _ in data[uid]['live_status']['live'].items():
+                                if ldid not in live_info['live']:
+                                    data[uid]['live_status']['live'].pop(ldid)
+                                    t = f"{ldata['name']}下播了"
                                     for group in subscribes[uid]['groups']:
                                         await action.sendGroupText(group=group, text=t)
-                                else:
-                                    t = f'未处理的直播状态: {live_info["liveBroadcastContent"]}\n请联系那个臭写bot的'
-                                    for group in subscribes[uid]['groups']:
-                                        await action.sendGroupText(group=group, text=t)
-                                    
-                        data[uid]['live_status'] = live_info['liveBroadcastContent']
+                            for ldid, lddata in data[uid]['live_status']['upcoming'].items():
+                                if now > parser.parse(lddata['playlist_id_update_at']):
+                                    data[uid]['live_status']['upcoming'].pop(ldid)
+                        else:
+                            data[uid]['live_status'] = copy.copy(live_info)
                         await fileio.write_json(join(resource_path, "data.json"), data)
                         await asyncio.sleep(5)
                     except Exception as e:
@@ -125,3 +135,23 @@ async def ytbtimeline_subs():
                 await action.sendGroupText(group=1014696092, text=t)
             else:
                 await S.text(t)
+                
+async def ytbtimeline_stats():
+    if msg := ctx.g:
+        if msg.text.strip() in ['ytb状态', '油管状态'] and msg.from_user != jconfig.qq:
+            data = await fileio.read_json(join(resource_path, 'data.json'))
+            t = '当前ytb状态: \n'
+            for uid, v in data.items():
+                t += f"{uid}:\n"
+                if 'live_status' in v and isinstance(v['live_status'], dict):
+                    if v['live_status'].get('live', None):
+                        for ldata in v['live_status']['live'].values():
+                            t += f"正在直播: {ldata['title']}\n"
+                    if v['live_status'].get('upcoming', None):
+                        for ldata in v['live_status']['upcoming'].values():
+                            t += f"直播预约: {ldata['title']}\n"
+                            scheduledStartTime = parser.parse(ldata['liveStreamingDetails']['scheduledStartTime']).astimezone(SHA_TZ)
+                            t += f"\t开始时间: {scheduledStartTime.strftime('%Y-%m-%d %H:%M:%S %Z')}\n"
+                else:
+                    t += '无\n\n'
+            await S.text(t)

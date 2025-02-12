@@ -49,20 +49,23 @@ class YoutubeManager():
             )
             response = request.execute()
             if not response['items']:
-                return 0, {'name': 'none', 'liveBroadcastContent': 'none'}
+                return 0, []
+            res = {
+                'live': {},
+                'upcoming': {}
+            }
             for i in response['items']:
                 if i['snippet']['liveBroadcastContent'] in ['live', 'upcoming']:
-                    break
-            else:
-                i = response['items'][0]
-            res = {'liveStreamingDetails': i.get('liveStreamingDetails', {})}
-            res_row = i['snippet']
-            res['name'] = res_row['channelTitle']
-            res['title'] = res_row['title']
-            res['description'] = res_row['description']
-            res['liveBroadcastContent'] = res_row['liveBroadcastContent']
-            res['publishedAt'] = res_row['publishedAt']
-            res['thumbnail'] = res_row['thumbnails'].get('high', res_row['thumbnails'].get('medium', res_row['thumbnails'].get('default', {})))['url']
+                    res_one = {
+                        'liveStreamingDetails': i.get('liveStreamingDetails', {}),
+                        'name': i['snippet']['channelTitle'],
+                        'title': i['snippet']['title'],
+                        'description': i['snippet']['description'],
+                        'liveBroadcastContent': i['snippet']['liveBroadcastContent'],
+                        'publishedAt': i['snippet']['publishedAt'],
+                        'thumbnail': i['snippet']['thumbnails'].get('high', i['snippet']['thumbnails'].get('medium', i['snippet']['thumbnails'].get('default', {})))['url']
+                    }
+                    res[i['snippet']['liveBroadcastContent']][i['id']] = res_one
             return 0, res
         except Exception as e:
             traceback.print_exc()
