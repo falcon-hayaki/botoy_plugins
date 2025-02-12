@@ -83,7 +83,7 @@ async def ytbtimeline():
                                     for group in subscribes[uid]['groups']:
                                         await action.sendGroupText(group=group, text=t)
                             for ldid, lddata in data[uid]['live_status']['upcoming'].items():
-                                if now > parser.parse(lddata['liveStreamingDetails']['scheduledStartTime']):
+                                if now > parser.parse(lddata['liveStreamingDetails']['scheduledStartTime']).replace(tzinfo=None):
                                     data[uid]['live_status']['upcoming'].pop(ldid)
                         else:
                             data[uid]['live_status'] = copy.copy(live_info)
@@ -139,9 +139,15 @@ async def ytbtimeline_subs():
 async def ytbtimeline_stats():
     if msg := ctx.g:
         if msg.text.strip() in ['ytb状态', '油管状态'] and msg.from_user != jconfig.qq:
+            subscribes = await fileio.read_json(join(resource_path, 'subscribes.json'))
             data = await fileio.read_json(join(resource_path, 'data.json'))
+            uid_list = [u for u, v in subscribes.items() if msg.from_group in v['groups']]
+            if not uid_list:
+                await S.text('未订阅任何频道')
             t = '当前ytb状态: \n'
             for uid, v in data.items():
+                if uid not in uid_list:
+                    continue
                 t += f"{uid}:\n"
                 if 'live_status' in v and isinstance(v['live_status'], dict):
                     if v['live_status'].get('live', None):
