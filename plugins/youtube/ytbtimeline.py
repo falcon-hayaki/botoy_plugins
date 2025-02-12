@@ -75,16 +75,21 @@ async def ytbtimeline():
                                     imgs = ldata['thumbnail']
                                     for group in subscribes[uid]['groups']:
                                         await action.sendGroupPic(group=group, text=t, url=imgs)
-                                        
+                            
+                            ldid_to_pop = []
                             for ldid, _ in data[uid]['live_status']['live'].items():
                                 if ldid not in live_info['live']:
-                                    data[uid]['live_status']['live'].pop(ldid)
+                                    ldid_to_pop.append(ldid)
                                     t = f"{ldata['name']}下播了"
                                     for group in subscribes[uid]['groups']:
                                         await action.sendGroupText(group=group, text=t)
+                            for ltp in ldid_to_pop:
+                                data[uid]['live_status']['live'].pop(ltp)
                             for ldid, lddata in data[uid]['live_status']['upcoming'].items():
                                 if now > parser.parse(lddata['liveStreamingDetails']['scheduledStartTime']).replace(tzinfo=None):
-                                    data[uid]['live_status']['upcoming'].pop(ldid)
+                                    ldid_to_pop.append(ldid)
+                            for ltp in ldid_to_pop:
+                                data[uid]['live_status']['upcoming'].pop(ltp)
                         else:
                             data[uid]['live_status'] = copy.copy(live_info)
                         await fileio.write_json(join(resource_path, "data.json"), data)
