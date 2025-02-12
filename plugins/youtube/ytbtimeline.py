@@ -77,10 +77,10 @@ async def ytbtimeline():
                                         await action.sendGroupPic(group=group, text=t, url=imgs)
                             
                             ldid_to_pop = []
-                            for ldid, _ in data[uid]['live_status']['live'].items():
+                            for ldid, lddata in data[uid]['live_status']['live'].items():
                                 if ldid not in live_info['live']:
                                     ldid_to_pop.append(ldid)
-                                    t = f"{ldata['name']}下播了"
+                                    t = f"{lddata['name']}下播了"
                                     for group in subscribes[uid]['groups']:
                                         await action.sendGroupText(group=group, text=t)
                             for ltp in ldid_to_pop:
