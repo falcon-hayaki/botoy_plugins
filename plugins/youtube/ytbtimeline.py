@@ -66,6 +66,10 @@ async def ytbtimeline():
                                 if lid in data[uid]['live_status']['upcoming']:
                                     del data[uid]['live_status']['upcoming'][lid]
                             for lid, ldata in live_info['upcoming'].items():
+                                # NOTE: 遇到未知问题，先跳过
+                                if 'scheduledStartTime' not in ldata['liveStreamingDetails']:
+                                    print(uid, '\n', video_ids, '\n', live_info)
+                                    continue
                                 if lid not in data[uid]['live_status']['upcoming']:
                                     data[uid]['live_status']['upcoming'][lid] = ldata
                                     t = f"{ldata['name']}设置了一个直播预约\n"
