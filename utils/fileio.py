@@ -9,7 +9,7 @@ async def read_json(path: str):
     return data
 
 async def write_json(path: str, data: Union[dict, list]):
-    line = json.dumps(data)
+    line = json.dumps(data, ensure_ascii=False, indent=4)
     async with aiofiles.open(path, 'w') as f:
         await f.write(line)
 

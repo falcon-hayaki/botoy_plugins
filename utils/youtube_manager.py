@@ -48,12 +48,12 @@ class YoutubeManager():
                 id=','.join(video_id_list)
             )
             response = request.execute()
-            if not response['items']:
-                return 0, []
             res = {
                 'live': {},
                 'upcoming': {}
             }
+            if not response['items']:
+                return 0, res
             for i in response['items']:
                 if i['snippet']['liveBroadcastContent'] in ['live', 'upcoming']:
                     res_one = {
