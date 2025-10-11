@@ -63,6 +63,7 @@ async def ytbtimeline():
                                     imgs = ldata['thumbnail']
                                     for group in subscribes[uid]['groups']:
                                         await action.sendGroupPic(group=group, text=t, url=imgs)
+                                    await fileio.write_json(join(resource_path, "data.json"), data)
                                 if lid in data[uid]['live_status']['upcoming']:
                                     del data[uid]['live_status']['upcoming'][lid]
                             for lid, ldata in live_info['upcoming'].items():
@@ -79,6 +80,7 @@ async def ytbtimeline():
                                     imgs = ldata['thumbnail']
                                     for group in subscribes[uid]['groups']:
                                         await action.sendGroupPic(group=group, text=t, url=imgs)
+                                    await fileio.write_json(join(resource_path, "data.json"), data)
                             
                             ldid_to_pop = []
                             for ldid, lddata in data[uid]['live_status']['live'].items():
@@ -89,12 +91,14 @@ async def ytbtimeline():
                                         await action.sendGroupText(group=group, text=t)
                             for ltp in ldid_to_pop:
                                 data[uid]['live_status']['live'].pop(ltp)
+                            await fileio.write_json(join(resource_path, "data.json"), data)
                             ldid_to_pop = []
                             for ldid, lddata in data[uid]['live_status']['upcoming'].items():
                                 if 'scheduledStartTime' not in lddata['liveStreamingDetails'] or now > parser.parse(lddata['liveStreamingDetails']['scheduledStartTime']).replace(tzinfo=None):
                                     ldid_to_pop.append(ldid)
                             for ltp in ldid_to_pop:
                                 data[uid]['live_status']['upcoming'].pop(ltp)
+                            await fileio.write_json(join(resource_path, "data.json"), data)
                         else:
                             data[uid]['live_status'] = copy.copy(live_info)
                         await fileio.write_json(join(resource_path, "data.json"), data)

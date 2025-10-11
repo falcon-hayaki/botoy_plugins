@@ -57,8 +57,12 @@ async def timeline():
                                             t = f"{data[uid]['name']}更新了{k}\n从\n{data[uid][k]}\n更改为\n{v}"
                                             await action.sendGroupText(group=group, text=t)
                                     data[uid][k] = v
-                            timeline_row = tm.get_user_timeline(data[uid]['id']).json()
-                            timeline = tm.parse_timeline(timeline_row)
+                            timeline_row = tm.get_user_timeline(data[uid]['id'])
+                            try:
+                                timeline_json = timeline_row.json()
+                            except:
+                                raise ValueError(f'tl value error: {timeline_row}')
+                            timeline = tm.parse_timeline(timeline_json)
                             if timeline is None:
                                 raise ValueError(f'tl value error: {timeline_row}')
                             # handle errors
@@ -107,7 +111,7 @@ async def timeline():
                         print(e, traceback.format_exc())
                         t = f'twitter tl scheduler error\nuid: {uid}\ntraceback: {traceback.format_exc()}'
                         await action.sendGroupText(group=1014696092, text=t)
-                        await asyncio.sleep(60)
+                        await asyncio.sleep(300)
                         
                 data = await fileio.read_json(join(resource_path, "data.json"))
                 uid_to_del = []
