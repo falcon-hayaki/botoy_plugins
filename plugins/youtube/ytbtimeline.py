@@ -89,6 +89,7 @@ async def ytbtimeline():
                                     t = f"{lddata['name']}下播了"
                                     for group in subscribes[uid]['groups']:
                                         await action.sendGroupText(group=group, text=t)
+                                    await fileio.write_json(join(resource_path, "data.json"), data)
                             for ltp in ldid_to_pop:
                                 data[uid]['live_status']['live'].pop(ltp)
                             await fileio.write_json(join(resource_path, "data.json"), data)
