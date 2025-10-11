@@ -76,6 +76,8 @@ async def ytbtimeline():
                                     t = f"{ldata['name']}设置了一个直播预约\n"
                                     t += f"标题: {ldata['title']}\n"
                                     scheduledStartTime = parser.parse(ldata['liveStreamingDetails']['scheduledStartTime']).astimezone(SHA_TZ)
+                                    if scheduledStartTime.replace(tzinfo=None) < now:
+                                        continue
                                     t += f"开始时间: {scheduledStartTime.strftime('%Y-%m-%d %H:%M:%S %Z')}\n"
                                     imgs = ldata['thumbnail']
                                     for group in subscribes[uid]['groups']:
