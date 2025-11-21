@@ -25,6 +25,10 @@ file_handler = logging.FileHandler(os.path.join(LOG_DIR, "botoy.log"), encoding=
 file_handler.setFormatter(fmt)
 logger.addHandler(file_handler)
 
+# Reduce noisy library loggers to INFO (suppress DEBUG spam)
+for noisy in ("websockets", "websockets.client", "httpx", "urllib3", "googleapiclient", "asyncio"):
+    logging.getLogger(noisy).setLevel(logging.INFO)
+
 bot.load_plugins()
 bot.print_receivers()
 
