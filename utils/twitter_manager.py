@@ -31,7 +31,7 @@ class TwitterManager():
         self.__requests_get = requests_get_fn
         
     def get_user_info(self, user_name):
-        url = 'https://twitter.com/i/api/graphql/vG3rchZtwqiwlKgUYCrTRA/UserByScreenName'
+        url = 'https://twitter.com/i/api/graphql/ZHSN3WlvahPKVvUxVQbg1A/UserByScreenName'
         params = {
             'variables': json.dumps({"screen_name":user_name,"withSafetyModeUserFields":True,"withSuperFollowsUserFields":True}),
             'features': json.dumps({"responsive_web_graphql_timeline_navigation_enabled":False})
@@ -39,7 +39,7 @@ class TwitterManager():
         return self.__get(url, params)
     
     def get_user_timeline(self, uid):
-        url = 'https://twitter.com/i/api/graphql/edn8-AOJHq7gBM6OPpWT_g/UserTweets'
+        url = 'https://twitter.com/i/api/graphql/oRJs8SLCRNRbQzuZG93_oA/UserTweets'
         params = {
             'variables': json.dumps({"userId":uid,"count":40,"includePromotedContent":True,"withQuickPromoteEligibilityTweetFields":True,"withSuperFollowsUserFields":True,"withDownvotePerspective":False,"withReactionsMetadata":False,"withReactionsPerspective":False,"withSuperFollowsTweetFields":True,"withVoice":True,"withV2Timeline":True}),
             'features': json.dumps({"responsive_web_graphql_timeline_navigation_enabled":False,"unified_cards_ad_metadata_container_dynamic_card_content_query_enabled":True,"responsive_web_uc_gql_enabled":True,"vibe_api_enabled":True,"responsive_web_edit_tweet_api_enabled":True,"graphql_is_translatable_rweb_tweet_is_translatable_enabled":False,"standardized_nudges_misinfo":True,"tweet_with_visibility_results_prefer_gql_limited_actions_policy_enabled":False,"interactive_text_enabled":True,"responsive_web_text_conversations_enabled":False,"responsive_web_enhance_cards_enabled":True})
@@ -47,7 +47,7 @@ class TwitterManager():
         return self.__get(url, params)
     
     def get_tweet_detail(self, tid):
-        url = 'https://twitter.com/i/api/graphql/zZXycP0V6H7m-2r0mOnFcA/TweetDetail'
+        url = 'https://twitter.com/i/api/graphql/YVyS4SfwYW7Uw5qwy0mQCA/TweetDetail'
         params = {
             'variables': json.dumps({"focalTweetId":tid,"with_rux_injections":False,"includePromotedContent":True,"withCommunity":True,"withQuickPromoteEligibilityTweetFields":True,"withBirdwatchNotes":False,"withSuperFollowsUserFields":True,"withDownvotePerspective":False,"withReactionsMetadata":False,"withReactionsPerspective":False,"withSuperFollowsTweetFields":True,"withVoice":True,"withV2Timeline":True}),
             'features': json.dumps({"verified_phone_label_enabled":False,"responsive_web_graphql_timeline_navigation_enabled":False,"unified_cards_ad_metadata_container_dynamic_card_content_query_enabled":True,"tweetypie_unmention_optimization_enabled":True,"responsive_web_uc_gql_enabled":True,"vibe_api_enabled":True,"responsive_web_edit_tweet_api_enabled":True,"graphql_is_translatable_rweb_tweet_is_translatable_enabled":False,"standardized_nudges_misinfo":True,"tweet_with_visibility_results_prefer_gql_limited_actions_policy_enabled":False,"interactive_text_enabled":True,"responsive_web_text_conversations_enabled":False,"responsive_web_enhance_cards_enabled":True})
