@@ -1,6 +1,9 @@
 import requests
 import base64
 from botoy import ctx, S, mark_recv, jconfig, action
+import logging
+
+logger = logging.getLogger(__name__)
 
 from utils.media_processing import download_from_url_and_convert_to_base64
 
@@ -13,7 +16,7 @@ async def sleepy():
                 info = resp.json()['info']
                 await S.text("hayaki状态: {}\n{}".format(info['name'], info['desc']))
             else:
-                print(resp.status_code, resp.text)
+                logger.error("sleepy request failed: %s %s", resp.status_code, resp.text)
                 await S.text("发生了一点错误喵")
 
 mark_recv(sleepy)

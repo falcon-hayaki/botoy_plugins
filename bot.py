@@ -4,6 +4,7 @@ import os
 import time
 import inspect
 from logging import Formatter
+from logging.handlers import RotatingFileHandler
 
 from botoy import bot
 
@@ -21,7 +22,12 @@ console_handler = logging.StreamHandler()
 console_handler.setFormatter(fmt)
 logger.addHandler(console_handler)
 
-file_handler = logging.FileHandler(os.path.join(LOG_DIR, "botoy.log"), encoding="utf-8")
+file_handler = RotatingFileHandler(
+    os.path.join(LOG_DIR, "botoy.log"),
+    maxBytes=500 * 1024,
+    backupCount=5,
+    encoding="utf-8",
+)
 file_handler.setFormatter(fmt)
 logger.addHandler(file_handler)
 

@@ -1,7 +1,10 @@
 import requests
 import json
+import logging
 
 from botoy import jconfig
+
+logger = logging.getLogger(__name__)
 
 class TwitterManager():
     def __init__(self, requests_get_fn=None) -> None:
@@ -212,8 +215,11 @@ if __name__ == '__main__':
     # print(tm.parse_user_info(res))
     uid = res['data']['user']['result']['rest_id']
     res = tm.get_user_timeline(uid)
-    print(res.text)
-    print(res.status_code, res.json())
+    logger.info(res.text)
+    try:
+        logger.info("status: %s json: %s", res.status_code, res.json())
+    except Exception:
+        logger.info("status: %s (failed to decode json)", res.status_code)
     # print(tm.parse_timeline(res.json()))
     
     # res = tm.get_tweet_detail('1675777787368722433')

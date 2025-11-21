@@ -15,6 +15,9 @@ import numpy as np
 from wordcloud import WordCloud, STOPWORDS, ImageColorGenerator
 from PIL import Image
 from botoy import mark_recv, ctx, action, file_to_base64, jconfig, async_run, to_async
+import logging
+
+logger = logging.getLogger(__name__)
 
 resource_path = 'resources/wordcloud'
 from utils.tz import beijingnow
@@ -135,7 +138,7 @@ async def gen_wordcloud():
                             except Exception:
                                 pass
                     except Exception as e:
-                        print(e, traceback.format_exc())
+                        logger.exception(f'wordcloud scheduler error group_id: {group_id}')
                         t = f'twitter tl scheduler error\group_id: {group_id}\ntraceback: {traceback.format_exc()}'
                         await action.sendGroupText(group=1014696092, text=t)
                 

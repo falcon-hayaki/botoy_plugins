@@ -6,6 +6,9 @@ from croniter import croniter
 from datetime import datetime, timedelta
 from dateutil import parser
 from botoy import ctx, action, jconfig, S
+import logging
+
+logger = logging.getLogger(__name__)
 
 resource_path = 'resources/ytb_live_stream'
 from . import ym
@@ -69,7 +72,7 @@ async def ytbtimeline():
                             for lid, ldata in live_info['upcoming'].items():
                                 # NOTE: 遇到未知问题，先跳过
                                 if 'scheduledStartTime' not in ldata['liveStreamingDetails']:
-                                    print(uid, '\n', video_ids, '\n', live_info)
+                                    logger.warning("missing scheduledStartTime for uid=%s video_ids=%s live_info=%s", uid, video_ids, live_info)
                                     continue
                                 if lid not in data[uid]['live_status']['upcoming']:
                                     data[uid]['live_status']['upcoming'][lid] = ldata
@@ -113,7 +116,7 @@ async def ytbtimeline():
                             t = f'youtube tl scheduler error\nuid: {uid}\ntraceback: {traceback.format_exc()}'
                             await action.sendGroupText(group=1014696092, text=t)
                             return
-                        print(e, traceback.format_exc())
+                        logger.exception(f'youtube tl scheduler error uid: {uid}')
                         t = f'youtube tl scheduler error\nuid: {uid}\ntraceback: {traceback.format_exc()}'
                         await action.sendGroupText(group=1014696092, text=t)
                         await asyncio.sleep(60)

@@ -6,6 +6,9 @@ from croniter import croniter
 from datetime import datetime, timedelta
 from dateutil import parser
 from botoy import ctx, action, jconfig
+import logging
+
+logger = logging.getLogger(__name__)
 
 resource_path = 'resources/twitter_tl'
 from . import tm
@@ -108,7 +111,7 @@ async def timeline():
                         await fileio.write_json(join(resource_path, "data.json"), data)
                         await asyncio.sleep(5)
                     except Exception as e:
-                        print(e, traceback.format_exc())
+                        logger.exception(f'twitter tl scheduler error uid: {uid}')
                         t = f'twitter tl scheduler error\nuid: {uid}\ntraceback: {traceback.format_exc()}'
                         await action.sendGroupText(group=1014696092, text=t)
                         await asyncio.sleep(300)
