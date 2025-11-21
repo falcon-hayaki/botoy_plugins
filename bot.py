@@ -1,6 +1,8 @@
 import asyncio
 import logging
 import os
+import time
+import inspect
 from logging import Formatter
 
 from botoy import bot
@@ -27,7 +29,7 @@ bot.load_plugins()
 bot.print_receivers()
 
 
-async def run_with_reconnect(bot):
+async def _async_run_with_reconnect(bot):
     while True:
         try:
             await bot.run()
@@ -36,9 +38,21 @@ async def run_with_reconnect(bot):
             await asyncio.sleep(5)
 
 
+def _sync_run_with_reconnect(bot):
+    while True:
+        try:
+            bot.run()
+        except Exception as e:
+            logger.error(f"bot.run() 失败: {e}")
+            time.sleep(5)
+
+
 def main():
     try:
-        asyncio.run(run_with_reconnect(bot))
+        if inspect.iscoroutinefunction(bot.run):
+            asyncio.run(_async_run_with_reconnect(bot))
+        else:
+            _sync_run_with_reconnect(bot)
     except KeyboardInterrupt:
         pass
 
