@@ -3,6 +3,9 @@ import traceback
 from datetime import datetime
 from dateutil import parser
 from botoy import ctx, S, action, jconfig
+import logging
+
+logger = logging.getLogger(__name__)
 
 from . import bm
 from utils.tz import SHA_TZ
@@ -36,7 +39,7 @@ async def get_video_info():
                 t += f"分享：{video_info['share']}\t"
                 await action.sendGroupPic(group=msg.from_group, text=t, url=[video_info['pic']])
             except Exception as e:
-                print(e, traceback.format_exc())
+                logger.exception(f'get_video_info error bv: {bv}')
                 t = f'get_video_info error\bv: {bv}\ntraceback: {traceback.format_exc()}'
                 await action.sendGroupText(group=1014696092, text=t)
                 

@@ -7,6 +7,7 @@ import re
 import random
 from os.path import join, exists, isfile
 from os import system, listdir
+import os, time
 from croniter import croniter
 from datetime import datetime, timezone
 import jieba
@@ -14,6 +15,9 @@ import numpy as np
 from wordcloud import WordCloud, STOPWORDS, ImageColorGenerator
 from PIL import Image
 from botoy import mark_recv, ctx, action, file_to_base64, jconfig, async_run, to_async
+import logging
+
+logger = logging.getLogger(__name__)
 
 resource_path = 'resources/wordcloud'
 from utils.tz import beijingnow
@@ -64,47 +68,78 @@ async def gen_wordcloud():
                     #     continue
                     try:
                         file_path = join(resource_path, f'chat_history/{group_id}.txt')
-                        if exists(file_path):
-                            text_list = await fileio.read_lines(file_path)
-                            word_list = []
-                            for text in text_list:
-                                text = text.strip()
-                                if text:
-                                    # 分词
-                                    jbc = list(jieba.cut(text, use_paddle=True))
-                                    words = [word for word in jbc if word not in stopwords]
-                                    word_list.extend(words)
-                                    # 不分词
-                                    # word_list.append(text)
-                            if not word_list:
-                                t = '本日你群一句正经话没有，服了'
-                                await action.sendGroupText(group=group_id, text=t)
-                            else:
-                                word_list_str = " ".join(word_list)
-                                wordcloud_data = dict(
-                                    background_color="white",
-                                    max_words=2000,
-                                    height=540,
-                                    width=870,
-                                    max_font_size=60,
-                                    stopwords=stopwords,
-                                    # mask=mask,    # 使用图片蒙版
-                                    color_func=colors,
-                                    collocations=False,
-                                    font_path=join(resource_path, 'HarmonyOS.ttf'),
-                                )
-                                img_path = join(resource_path, f'group_wordcloud/{group_id}.png')
-                                
-                                gen_wordcloud_sync(word_list_str, wordcloud_data, img_path)
-                                # await gen_wordcloud(word_list_str, wordcloud_data, img_path)
-                                # await async_run(gen_wordcloud_sync, word_list_str, wordcloud_data, img_path)
-                                
-                                t = f"[测试版]今日词云已送达\n今日你群共聊了{len(text_list)}句话"
-                                await action.sendGroupPic(group=group_id, text=t, base64=file_to_base64(img_path))
-                            await fileio.clear_file(file_path)
-                            await asyncio.sleep(10)
+                        lock_path = join(resource_path, f'chat_history/{group_id}.lock')
+                        STALE_SECONDS = 60 * 60 * 2  # 2 hours
+
+                        # 尝试创建原子 lock 文件，若已存在则跳过；若 lock 过旧则清理后重试
+                        lock_created = False
+                        try:
+                            fd = os.open(lock_path, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+                            os.close(fd)
+                            lock_created = True
+                        except FileExistsError:
+                            try:
+                                if time.time() - os.path.getmtime(lock_path) > STALE_SECONDS:
+                                    os.remove(lock_path)
+                                    fd = os.open(lock_path, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+                                    os.close(fd)
+                                    lock_created = True
+                            except Exception:
+                                lock_created = False
+
+                        if not lock_created:
+                            # 其他进程/协程正在处理；跳过以避免重复生成
+                            continue
+
+                        try:
+                            if exists(file_path):
+                                text_list = await fileio.read_lines(file_path)
+                                word_list = []
+                                for text in text_list:
+                                    text = text.strip()
+                                    if text:
+                                        # 分词
+                                        # jieba.enable_paddle():
+                                        # jbc = list(jieba.cut(text, use_paddle=True))
+                                        # words = [word for word in jbc if word not in stopwords]
+                                        # word_list.extend(words)
+                                        # 不分词
+                                        word_list.append(text)
+                                if not word_list:
+                                    t = '本日你群一句正经话没有，服了'
+                                    await action.sendGroupText(group=group_id, text=t)
+                                else:
+                                    word_list_str = " ".join(word_list)
+                                    wordcloud_data = dict(
+                                        background_color="white",
+                                        max_words=2000,
+                                        height=540,
+                                        width=870,
+                                        max_font_size=60,
+                                        stopwords=stopwords,
+                                        # mask=mask,    # 使用图片蒙版
+                                        color_func=colors,
+                                        collocations=False,
+                                        font_path=join(resource_path, 'HarmonyOS.ttf'),
+                                    )
+                                    img_path = join(resource_path, f'group_wordcloud/{group_id}.png')
+                                    
+                                    gen_wordcloud_sync(word_list_str, wordcloud_data, img_path)
+                                    # await gen_wordcloud(word_list_str, wordcloud_data, img_path)
+                                    # await async_run(gen_wordcloud_sync, word_list_str, wordcloud_data, img_path)
+                                    
+                                    t = f"[测试版]今日词云已送达\n今日你群共聊了{len(text_list)}句话"
+                                    await action.sendGroupPic(group=group_id, text=t, base64=file_to_base64(img_path))
+                                await fileio.clear_file(file_path)
+                                await asyncio.sleep(10)
+                        finally:
+                            try:
+                                if os.path.exists(lock_path):
+                                    os.remove(lock_path)
+                            except Exception:
+                                pass
                     except Exception as e:
-                        print(e, traceback.format_exc())
+                        logger.exception(f'wordcloud scheduler error group_id: {group_id}')
                         t = f'twitter tl scheduler error\group_id: {group_id}\ntraceback: {traceback.format_exc()}'
                         await action.sendGroupText(group=1014696092, text=t)
                 

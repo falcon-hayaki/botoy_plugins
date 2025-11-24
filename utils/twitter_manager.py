@@ -1,7 +1,10 @@
 import requests
 import json
+import logging
 
 from botoy import jconfig
+
+logger = logging.getLogger(__name__)
 
 class TwitterManager():
     def __init__(self, requests_get_fn=None) -> None:
@@ -28,26 +31,29 @@ class TwitterManager():
         self.__requests_get = requests_get_fn
         
     def get_user_info(self, user_name):
-        url = 'https://twitter.com/i/api/graphql/vG3rchZtwqiwlKgUYCrTRA/UserByScreenName'
+        url = 'https://x.com/i/api/graphql/-oaLodhGbbnzJBACb1kk2Q/UserByScreenName'
         params = {
-            'variables': json.dumps({"screen_name":user_name,"withSafetyModeUserFields":True,"withSuperFollowsUserFields":True}),
-            'features': json.dumps({"responsive_web_graphql_timeline_navigation_enabled":False})
+            'variables': json.dumps({"screen_name":user_name,"withGrokTranslatedBio":False}),
+            'features': json.dumps({"hidden_profile_subscriptions_enabled":True,"profile_label_improvements_pcf_label_in_post_enabled":True,"responsive_web_profile_redirect_enabled":False,"rweb_tipjar_consumption_enabled":True,"verified_phone_label_enabled":False,"subscriptions_verification_info_is_identity_verified_enabled":True,"subscriptions_verification_info_verified_since_enabled":True,"highlights_tweets_tab_ui_enabled":True,"responsive_web_twitter_article_notes_tab_enabled":True,"subscriptions_feature_can_gift_premium":True,"creator_subscriptions_tweet_preview_api_enabled":True,"responsive_web_graphql_skip_user_profile_image_extensions_enabled":False,"responsive_web_graphql_timeline_navigation_enabled":True}),
+            'fieldToggles': json.dumps({"withPayments":False,"withAuxiliaryUserLabels":True})
         }
         return self.__get(url, params)
     
     def get_user_timeline(self, uid):
-        url = 'https://twitter.com/i/api/graphql/edn8-AOJHq7gBM6OPpWT_g/UserTweets'
+        url = 'https://x.com/i/api/graphql/lZRf8IC-GTuGxDwcsHW8aw/UserTweets'
         params = {
-            'variables': json.dumps({"userId":uid,"count":40,"includePromotedContent":True,"withQuickPromoteEligibilityTweetFields":True,"withSuperFollowsUserFields":True,"withDownvotePerspective":False,"withReactionsMetadata":False,"withReactionsPerspective":False,"withSuperFollowsTweetFields":True,"withVoice":True,"withV2Timeline":True}),
-            'features': json.dumps({"responsive_web_graphql_timeline_navigation_enabled":False,"unified_cards_ad_metadata_container_dynamic_card_content_query_enabled":True,"responsive_web_uc_gql_enabled":True,"vibe_api_enabled":True,"responsive_web_edit_tweet_api_enabled":True,"graphql_is_translatable_rweb_tweet_is_translatable_enabled":False,"standardized_nudges_misinfo":True,"tweet_with_visibility_results_prefer_gql_limited_actions_policy_enabled":False,"interactive_text_enabled":True,"responsive_web_text_conversations_enabled":False,"responsive_web_enhance_cards_enabled":True})
+            'variables': json.dumps({"userId":uid,"count":40,"count":20,"includePromotedContent":True,"withQuickPromoteEligibilityTweetFields":True,"withVoice":True}),
+            'features': json.dumps({"rweb_video_screen_enabled":False,"profile_label_improvements_pcf_label_in_post_enabled":True,"responsive_web_profile_redirect_enabled":False,"rweb_tipjar_consumption_enabled":True,"verified_phone_label_enabled":False,"creator_subscriptions_tweet_preview_api_enabled":True,"responsive_web_graphql_timeline_navigation_enabled":True,"responsive_web_graphql_skip_user_profile_image_extensions_enabled":False,"premium_content_api_read_enabled":False,"communities_web_enable_tweet_community_results_fetch":True,"c9s_tweet_anatomy_moderator_badge_enabled":True,"responsive_web_grok_analyze_button_fetch_trends_enabled":False,"responsive_web_grok_analyze_post_followups_enabled":True,"responsive_web_jetfuel_frame":True,"responsive_web_grok_share_attachment_enabled":True,"articles_preview_enabled":True,"responsive_web_edit_tweet_api_enabled":True,"graphql_is_translatable_rweb_tweet_is_translatable_enabled":True,"view_counts_everywhere_api_enabled":True,"longform_notetweets_consumption_enabled":True,"responsive_web_twitter_article_tweet_consumption_enabled":True,"tweet_awards_web_tipping_enabled":False,"responsive_web_grok_show_grok_translated_post":False,"responsive_web_grok_analysis_button_from_backend":True,"creator_subscriptions_quote_tweet_preview_enabled":False,"freedom_of_speech_not_reach_fetch_enabled":True,"standardized_nudges_misinfo":True,"tweet_with_visibility_results_prefer_gql_limited_actions_policy_enabled":True,"longform_notetweets_rich_text_read_enabled":True,"longform_notetweets_inline_media_enabled":True,"responsive_web_grok_image_annotation_enabled":True,"responsive_web_grok_imagine_annotation_enabled":True,"responsive_web_grok_community_note_auto_translation_is_enabled":False,"responsive_web_enhance_cards_enabled":False}),
+            'fieldToggles': json.dumps({"withArticlePlainText":False})
         }
         return self.__get(url, params)
     
     def get_tweet_detail(self, tid):
-        url = 'https://twitter.com/i/api/graphql/zZXycP0V6H7m-2r0mOnFcA/TweetDetail'
+        url = 'https://x.com/i/api/graphql/6QzqakNMdh_YzBAR9SYPkQ/TweetDetail'
         params = {
-            'variables': json.dumps({"focalTweetId":tid,"with_rux_injections":False,"includePromotedContent":True,"withCommunity":True,"withQuickPromoteEligibilityTweetFields":True,"withBirdwatchNotes":False,"withSuperFollowsUserFields":True,"withDownvotePerspective":False,"withReactionsMetadata":False,"withReactionsPerspective":False,"withSuperFollowsTweetFields":True,"withVoice":True,"withV2Timeline":True}),
-            'features': json.dumps({"verified_phone_label_enabled":False,"responsive_web_graphql_timeline_navigation_enabled":False,"unified_cards_ad_metadata_container_dynamic_card_content_query_enabled":True,"tweetypie_unmention_optimization_enabled":True,"responsive_web_uc_gql_enabled":True,"vibe_api_enabled":True,"responsive_web_edit_tweet_api_enabled":True,"graphql_is_translatable_rweb_tweet_is_translatable_enabled":False,"standardized_nudges_misinfo":True,"tweet_with_visibility_results_prefer_gql_limited_actions_policy_enabled":False,"interactive_text_enabled":True,"responsive_web_text_conversations_enabled":False,"responsive_web_enhance_cards_enabled":True})
+            'variables': json.dumps({"focalTweetId":tid,"referrer":"profile","with_rux_injections":False,"rankingMode":"Relevance","includePromotedContent":True,"withCommunity":True,"withQuickPromoteEligibilityTweetFields":True,"withBirdwatchNotes":True,"withVoice":True}),
+            'features': json.dumps({"rweb_video_screen_enabled":False,"profile_label_improvements_pcf_label_in_post_enabled":True,"responsive_web_profile_redirect_enabled":False,"rweb_tipjar_consumption_enabled":True,"verified_phone_label_enabled":False,"creator_subscriptions_tweet_preview_api_enabled":True,"responsive_web_graphql_timeline_navigation_enabled":True,"responsive_web_graphql_skip_user_profile_image_extensions_enabled":False,"premium_content_api_read_enabled":False,"communities_web_enable_tweet_community_results_fetch":True,"c9s_tweet_anatomy_moderator_badge_enabled":True,"responsive_web_grok_analyze_button_fetch_trends_enabled":False,"responsive_web_grok_analyze_post_followups_enabled":True,"responsive_web_jetfuel_frame":True,"responsive_web_grok_share_attachment_enabled":True,"articles_preview_enabled":True,"responsive_web_edit_tweet_api_enabled":True,"graphql_is_translatable_rweb_tweet_is_translatable_enabled":True,"view_counts_everywhere_api_enabled":True,"longform_notetweets_consumption_enabled":True,"responsive_web_twitter_article_tweet_consumption_enabled":True,"tweet_awards_web_tipping_enabled":False,"responsive_web_grok_show_grok_translated_post":False,"responsive_web_grok_analysis_button_from_backend":True,"creator_subscriptions_quote_tweet_preview_enabled":False,"freedom_of_speech_not_reach_fetch_enabled":True,"standardized_nudges_misinfo":True,"tweet_with_visibility_results_prefer_gql_limited_actions_policy_enabled":True,"longform_notetweets_rich_text_read_enabled":True,"longform_notetweets_inline_media_enabled":True,"responsive_web_grok_image_annotation_enabled":True,"responsive_web_grok_imagine_annotation_enabled":True,"responsive_web_grok_community_note_auto_translation_is_enabled":False,"responsive_web_enhance_cards_enabled":False}),
+            'fieldToggles': json.dumps({"withArticleRichContentState":True,"withArticlePlainText":False,"withGrokAnalyze":False,"withDisallowedReplyControls":False})
         }
         return self.__get(url, params)
     
@@ -212,8 +218,11 @@ if __name__ == '__main__':
     # print(tm.parse_user_info(res))
     uid = res['data']['user']['result']['rest_id']
     res = tm.get_user_timeline(uid)
-    print(res.text)
-    print(res.status_code, res.json())
+    logger.info(res.text)
+    try:
+        logger.info("status: %s json: %s", res.status_code, res.json())
+    except Exception:
+        logger.info("status: %s (failed to decode json)", res.status_code)
     # print(tm.parse_timeline(res.json()))
     
     # res = tm.get_tweet_detail('1675777787368722433')

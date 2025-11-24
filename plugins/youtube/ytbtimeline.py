@@ -6,6 +6,9 @@ from croniter import croniter
 from datetime import datetime, timedelta
 from dateutil import parser
 from botoy import ctx, action, jconfig, S
+import logging
+
+logger = logging.getLogger(__name__)
 
 resource_path = 'resources/ytb_live_stream'
 from . import ym
@@ -69,13 +72,15 @@ async def ytbtimeline():
                             for lid, ldata in live_info['upcoming'].items():
                                 # NOTE: 遇到未知问题，先跳过
                                 if 'scheduledStartTime' not in ldata['liveStreamingDetails']:
-                                    print(uid, '\n', video_ids, '\n', live_info)
+                                    logger.warning("missing scheduledStartTime for uid=%s video_ids=%s live_info=%s", uid, video_ids, live_info)
                                     continue
                                 if lid not in data[uid]['live_status']['upcoming']:
                                     data[uid]['live_status']['upcoming'][lid] = ldata
                                     t = f"{ldata['name']}设置了一个直播预约\n"
                                     t += f"标题: {ldata['title']}\n"
                                     scheduledStartTime = parser.parse(ldata['liveStreamingDetails']['scheduledStartTime']).astimezone(SHA_TZ)
+                                    if scheduledStartTime.replace(tzinfo=None) < now:
+                                        continue
                                     t += f"开始时间: {scheduledStartTime.strftime('%Y-%m-%d %H:%M:%S %Z')}\n"
                                     imgs = ldata['thumbnail']
                                     for group in subscribes[uid]['groups']:
@@ -92,12 +97,14 @@ async def ytbtimeline():
                                     await fileio.write_json(join(resource_path, "data.json"), data)
                             for ltp in ldid_to_pop:
                                 data[uid]['live_status']['live'].pop(ltp)
+                            await fileio.write_json(join(resource_path, "data.json"), data)
                             ldid_to_pop = []
                             for ldid, lddata in data[uid]['live_status']['upcoming'].items():
                                 if 'scheduledStartTime' not in lddata['liveStreamingDetails'] or now > parser.parse(lddata['liveStreamingDetails']['scheduledStartTime']).replace(tzinfo=None):
                                     ldid_to_pop.append(ldid)
                             for ltp in ldid_to_pop:
                                 data[uid]['live_status']['upcoming'].pop(ltp)
+                            await fileio.write_json(join(resource_path, "data.json"), data)
                         else:
                             data[uid]['live_status'] = copy.copy(live_info)
                         await fileio.write_json(join(resource_path, "data.json"), data)
@@ -109,7 +116,7 @@ async def ytbtimeline():
                             t = f'youtube tl scheduler error\nuid: {uid}\ntraceback: {traceback.format_exc()}'
                             await action.sendGroupText(group=1014696092, text=t)
                             return
-                        print(e, traceback.format_exc())
+                        logger.exception(f'youtube tl scheduler error uid: {uid}')
                         t = f'youtube tl scheduler error\nuid: {uid}\ntraceback: {traceback.format_exc()}'
                         await action.sendGroupText(group=1014696092, text=t)
                         await asyncio.sleep(60)

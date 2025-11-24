@@ -6,6 +6,9 @@ from croniter import croniter
 from datetime import datetime, timedelta
 from dateutil import parser
 from botoy import ctx, action, jconfig
+import logging
+
+logger = logging.getLogger(__name__)
 
 resource_path = 'resources/twitter_tl'
 from . import tm
@@ -27,9 +30,22 @@ async def timeline():
                         data = await fileio.read_json(join(resource_path, 'data.json'))
                         # 初始化用户数据
                         if uid not in data:
-                            user_info = tm.parse_user_info(tm.get_user_info(uid).json())
+                            # 获取用户信息并安全解析 JSON，失败时记录响应内容以便排查
+                            resp = tm.get_user_info(uid)
+                            try:
+                                user_info_json = resp.json()
+                            except Exception:
+                                logger.error("get_user_info json decode failed, uid=%s status=%s text=%s", uid, getattr(resp, 'status_code', None), getattr(resp, 'text', repr(resp)))
+                                raise
+                            user_info = tm.parse_user_info(user_info_json)
                             data[uid] = copy.deepcopy(user_info)
-                            timeline_row = tm.get_user_timeline(data[uid]['id']).json()
+                            # 获取时间线并安全解析 JSON，失败时记录响应内容以便排查
+                            tl_resp = tm.get_user_timeline(data[uid]['id'])
+                            try:
+                                timeline_row = tl_resp.json()
+                            except Exception:
+                                logger.error("get_user_timeline json decode failed, uid=%s status=%s text=%s", uid, getattr(tl_resp, 'status_code', None), getattr(tl_resp, 'text', repr(tl_resp)))
+                                raise ValueError(f'tl value error: status={getattr(tl_resp, "status_code", None)}')
                             timeline = tm.parse_timeline(timeline_row)
                             if timeline is None:
                                 raise ValueError(f'tl value error: {timeline_row}')
@@ -39,7 +55,14 @@ async def timeline():
                             data[uid]['timeline'] = timeline
                         # 检查更新
                         else:
-                            user_info = tm.parse_user_info(tm.get_user_info(uid).json())
+                            # 更新用户信息，使用安全的 JSON 解析并在失败时记录响应
+                            resp = tm.get_user_info(uid)
+                            try:
+                                user_info_json = resp.json()
+                            except Exception:
+                                logger.error("get_user_info json decode failed (update), uid=%s status=%s text=%s", uid, getattr(resp, 'status_code', None), getattr(resp, 'text', repr(resp)))
+                                raise
+                            user_info = tm.parse_user_info(user_info_json)
                             for k, v in user_info.items():
                                 # 会反复横跳抽风，就不要了
                                 if k == 'following_count':
@@ -57,8 +80,13 @@ async def timeline():
                                             t = f"{data[uid]['name']}更新了{k}\n从\n{data[uid][k]}\n更改为\n{v}"
                                             await action.sendGroupText(group=group, text=t)
                                     data[uid][k] = v
-                            timeline_row = tm.get_user_timeline(data[uid]['id']).json()
-                            timeline = tm.parse_timeline(timeline_row)
+                            tl_resp = tm.get_user_timeline(data[uid]['id'])
+                            try:
+                                timeline_json = tl_resp.json()
+                            except Exception:
+                                logger.error("get_user_timeline json decode failed (update), uid=%s status=%s text=%s", uid, getattr(tl_resp, 'status_code', None), getattr(tl_resp, 'text', repr(tl_resp)))
+                                raise ValueError(f'tl value error: status={getattr(tl_resp, "status_code", None)}')
+                            timeline = tm.parse_timeline(timeline_json)
                             if timeline is None:
                                 raise ValueError(f'tl value error: {timeline_row}')
                             # handle errors
@@ -104,10 +132,10 @@ async def timeline():
                         await fileio.write_json(join(resource_path, "data.json"), data)
                         await asyncio.sleep(5)
                     except Exception as e:
-                        print(e, traceback.format_exc())
+                        logger.exception(f'twitter tl scheduler error uid: {uid}')
                         t = f'twitter tl scheduler error\nuid: {uid}\ntraceback: {traceback.format_exc()}'
                         await action.sendGroupText(group=1014696092, text=t)
-                        await asyncio.sleep(60)
+                        await asyncio.sleep(300)
                         
                 data = await fileio.read_json(join(resource_path, "data.json"))
                 uid_to_del = []
