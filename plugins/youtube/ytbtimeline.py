@@ -72,7 +72,7 @@ async def ytbtimeline():
                             for lid, ldata in live_info['upcoming'].items():
                                 # NOTE: 遇到未知问题，先跳过
                                 if 'scheduledStartTime' not in ldata['liveStreamingDetails']:
-                                    logger.warning("missing scheduledStartTime for uid=%s video_ids=%s live_info=%s", uid, video_ids, live_info)
+                                    # logger.warning("missing scheduledStartTime for uid=%s video_ids=%s live_info=%s", uid, video_ids, live_info)
                                     continue
                                 if lid not in data[uid]['live_status']['upcoming']:
                                     data[uid]['live_status']['upcoming'][lid] = ldata
