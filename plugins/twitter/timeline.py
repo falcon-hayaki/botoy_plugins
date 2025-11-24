@@ -53,6 +53,7 @@ async def timeline():
                             elif 'errors' in timeline:
                                 return
                             data[uid]['timeline'] = timeline
+                            await fileio.write_json(join(resource_path, "data.json"), data)
                         # 检查更新
                         else:
                             # 更新用户信息，使用安全的 JSON 解析并在失败时记录响应
@@ -85,6 +86,7 @@ async def timeline():
                                             t = f"{data[uid]['name']}更新了{k}\n从\n{data[uid][k]}\n更改为\n{v}"
                                             await action.sendGroupText(group=group, text=t)
                                     data[uid][k] = v
+                                    await fileio.write_json(join(resource_path, "data.json"), data)
                             tl_resp = tm.get_user_timeline(data[uid]['id'])
                             try:
                                 timeline_json = tl_resp.json()
@@ -133,8 +135,15 @@ async def timeline():
                                         pass
                                     else:
                                         await action.sendGroupText(group=group, text=t)
-                            data[uid]['timeline'] = copy.deepcopy(timeline)
-                        await fileio.write_json(join(resource_path, "data.json"), data)
+                                data[uid]['timeline'][t] = timeline[t]
+                                await fileio.write_json(join(resource_path, 'data.json'), data)
+                            
+                            # sync timeline for deleted tweets
+                            deleted_tweets = [t for t in data[uid]['timeline'] if t not in timeline]
+                            if deleted_tweets:
+                                for t in deleted_tweets:
+                                    del data[uid]['timeline'][t]
+                                await fileio.write_json(join(resource_path, 'data.json'), data)
                         await asyncio.sleep(5)
                     except Exception as e:
                         logger.exception(f'twitter tl scheduler error uid: {uid}')

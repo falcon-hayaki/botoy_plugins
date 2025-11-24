@@ -197,7 +197,7 @@ class TwitterManager():
         user_info = dict(
             id=user_result.get('rest_id'),
             name=core.get('name') or legacy.get('name'),
-            location=user_result.get('location', {}).get('location') or legacy.get('location'),
+            location=user_result.get('location', {}).get('location', '') or legacy.get('location', ''),
             description=legacy.get('description'),
             followers_count=legacy.get('followers_count'),
             following_count=legacy.get('friends_count'),
@@ -207,8 +207,6 @@ class TwitterManager():
     
     @staticmethod
     def parse_timeline(timeline):
-        logger.info('>>>>>>>>>>>>> twitter timeline (parse_timeline) called')
-
         # basic validation
         if not isinstance(timeline, dict) or 'data' not in timeline:
             if isinstance(timeline, dict) and 'errors' in timeline:
@@ -283,8 +281,6 @@ class TwitterManager():
         '''
         :return: tweet_id, entry_type, parsed_data_list
         '''
-        logger.info('>>>>>>>>>>>>> parse_twit_data_one: {}'.format(data))
-        
         tweet_id = data['entryId']
         content = data['content']
         entry_type = content['entryType']
