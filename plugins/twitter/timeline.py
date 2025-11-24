@@ -100,8 +100,8 @@ async def timeline():
                             elif 'errors' in timeline:
                                 return
                             new_tweets = [t for t in timeline if t not in data[uid]['timeline']]
-                            for t in new_tweets:
-                                tdata = timeline[t]
+                            for tweet in new_tweets:
+                                tdata = timeline[tweet]
                                 url = f'https://twitter.com/{uid}/status/{tdata["id"]}'
                                 tweet_type = tdata['tweet_type']
                                 created_at = parser.parse(tdata['created_at']).astimezone(SHA_TZ)
@@ -135,7 +135,7 @@ async def timeline():
                                         pass
                                     else:
                                         await action.sendGroupText(group=group, text=t)
-                                data[uid]['timeline'][t] = timeline[t]
+                                data[uid]['timeline'][tweet] = timeline[tweet]
                                 await fileio.write_json(join(resource_path, 'data.json'), data)
                             
                             # sync timeline for deleted tweets
