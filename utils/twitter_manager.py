@@ -168,20 +168,61 @@ class TwitterManager:
 
     @staticmethod
     def parse_timeline(timeline: Dict) -> Optional[Dict]:
-        if not isinstance(timeline, dict) or 'data' not in timeline:
-            return timeline if isinstance(timeline, dict) and 'errors' in timeline else None
+        if not isinstance(timeline, dict):
+            return None
+        if 'errors' in timeline:
+            return timeline
 
-        instructions = timeline.get('data', {}).get('user', {}).get('result', {}).get('timeline_v2', {}).get('timeline', {}).get('instructions', [])
-        
-        entries_source = next((instr for instr in instructions if isinstance(instr, dict) and instr.get('type') == 'TimelineAddEntries'), None)
-        if not entries_source:
-             entries_source = next((instr for instr in instructions if isinstance(instr, dict) and 'entries' in instr), None)
+        # helper: safe get by path list
+        def safe_get(obj, path):
+            cur = obj
+            for p in path:
+                if not isinstance(cur, dict) or p not in cur:
+                    return None
+                cur = cur[p]
+            return cur
 
-        if not entries_source:
+        # possible locations for instructions (try multiple common shapes)
+        candidates = [
+            ['data', 'user', 'result', 'timeline_v2', 'timeline', 'instructions'],
+            ['data', 'user', 'result', 'timeline', 'timeline', 'instructions'],
+            ['data', 'user', 'result', 'timeline', 'instructions'],
+            ['data', 'timeline', 'instructions'],
+            ['instructions']
+        ]
+
+        instructions = None
+        for path in candidates:
+            val = safe_get(timeline, path)
+            if isinstance(val, list):
+                instructions = val
+                break
+
+        if not instructions:
+            logger.warning("Could not find 'instructions' in timeline response.")
             return None
 
+        # find the instruction that contains entries
+        entries_source = None
+        for instr in instructions:
+            if not isinstance(instr, dict):
+                continue
+            # primary expected type
+            if instr.get('type') == 'TimelineAddEntries' and 'entries' in instr:
+                entries_source = instr
+                break
+            # fallback: some responses embed entries under different keys
+            if 'entries' in instr:
+                entries_source = instr
+                break
+
+        if not entries_source:
+            logger.warning("Could not find 'entries' in timeline instructions.")
+            return None
+
+        entries = entries_source.get('entries') or []
         timeline_data = {}
-        for entry in entries_source.get('entries', []):
+        for entry in entries:
             try:
                 dparsed = TwitterManager.parse_twit_data_one(entry)
                 if dparsed and len(dparsed) >= 3 and dparsed[2] is not None:
