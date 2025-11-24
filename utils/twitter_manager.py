@@ -186,19 +186,22 @@ class TwitterManager():
     
     @staticmethod
     def parse_user_result(user_result):
-        # -------------> DEBUG <-------------
-        logger.info(f'>>>>>> Debug twitter parse_user_result')
-        logger.info(f'user_result: {user_result}')
-        # -------------> DEBUG <-------------
-        legacy = user_result['legacy']
+        legacy = user_result.get('legacy', {})
+        core = user_result.get('core', {})
+
+        # The icon URL can be in the top-level avatar object or fallback to the legacy object
+        icon_url = user_result.get('avatar', {}).get('image_url')
+        if not icon_url:
+            icon_url = legacy.get('profile_image_url_https')
+
         user_info = dict(
-            id=user_result['rest_id'],
-            name=legacy['name'],
-            location=legacy['location'],
-            description=legacy['description'],
-            followers_count=legacy['followers_count'],
-            following_count=legacy['friends_count'],
-            icon=legacy['profile_image_url_https']
+            id=user_result.get('rest_id'),
+            name=core.get('name') or legacy.get('name'),
+            location=user_result.get('location', {}).get('location') or legacy.get('location'),
+            description=legacy.get('description'),
+            followers_count=legacy.get('followers_count'),
+            following_count=legacy.get('friends_count'),
+            icon=icon_url
         )
         return user_info
     
