@@ -95,7 +95,7 @@ async def timeline():
                                 raise ValueError(f'tl value error: status={getattr(tl_resp, "status_code", None)}')
                             timeline = tm.parse_timeline(timeline_json)
                             if timeline is None:
-                                raise ValueError(f'tl value error: {timeline_row}')
+                                raise ValueError(f'tl value error: {timeline_json}')
                             # handle errors
                             elif 'errors' in timeline:
                                 return
