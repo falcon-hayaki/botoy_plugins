@@ -56,7 +56,8 @@ class TwitterManager():
                 "responsive_web_graphql_timeline_navigation_enabled":True
             }),
             'fieldToggles': json.dumps({
-                "withAuxiliaryUserLabels": False
+                "withPayments":False,
+                "withAuxiliaryUserLabels":True
             })
         }
         return self.__get(url, params)
