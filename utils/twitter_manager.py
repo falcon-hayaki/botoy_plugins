@@ -207,6 +207,7 @@ class TwitterManager():
     
     @staticmethod
     def parse_timeline(timeline):
+        logger.info(f'>>>>>>>>>>>>> twitter timeline: {timeline}')
         if 'data' not in timeline:
             # handle error
             if 'errors' in timeline:
