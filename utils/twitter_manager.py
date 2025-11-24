@@ -207,30 +207,75 @@ class TwitterManager():
     
     @staticmethod
     def parse_timeline(timeline):
-        logger.info(f'>>>>>>>>>>>>> twitter timeline: {timeline}')
-        if 'data' not in timeline:
-            # handle error
-            if 'errors' in timeline:
+        logger.info('>>>>>>>>>>>>> twitter timeline (parse_timeline) called')
+
+        # basic validation
+        if not isinstance(timeline, dict) or 'data' not in timeline:
+            if isinstance(timeline, dict) and 'errors' in timeline:
                 return timeline
             return None
-        # uid不存在
-        if not timeline['data'].get('user'):
-            return None
-        instructions = timeline['data']['user']['result']['timeline_v2']['timeline']['instructions']
-        timeline_data_source = None
-        for i in instructions:
-            if i['type'] == 'TimelineAddEntries':
-                timeline_data_source = i
+
+        # helper: safe get by path list
+        def safe_get(obj, path):
+            cur = obj
+            for p in path:
+                if not isinstance(cur, dict) or p not in cur:
+                    return None
+                cur = cur[p]
+            return cur
+
+        # possible locations for instructions (try multiple common shapes)
+        candidates = [
+            ['data', 'user', 'result', 'timeline_v2', 'timeline', 'instructions'],
+            ['data', 'user', 'result', 'timeline', 'timeline', 'instructions'],
+            ['data', 'user', 'result', 'timeline', 'instructions'],
+            ['data', 'timeline', 'instructions'],
+            ['instructions']
+        ]
+
+        instructions = None
+        for path in candidates:
+            val = safe_get(timeline, path)
+            if isinstance(val, list):
+                instructions = val
                 break
-        # 时间线不存在
-        if timeline_data_source is None:
+
+        if not instructions:
+            # uid不存在 or unexpected structure
+            if not safe_get(timeline, ['data', 'user']):
+                return None
             return None
-        timeline_data = dict()
-        for dsource in timeline_data_source['entries']:
-            dparsed = TwitterManager.parse_twit_data_one(dsource)
-            if dparsed[2] is None:
+
+        # find the instruction that contains entries
+        entries_source = None
+        for instr in instructions:
+            if not isinstance(instr, dict):
+                continue
+            # primary expected type
+            if instr.get('type') == 'TimelineAddEntries' and 'entries' in instr:
+                entries_source = instr
+                break
+            # fallback: some responses embed entries under different keys
+            if 'entries' in instr:
+                entries_source = instr
+                break
+
+        if not entries_source:
+            return None
+
+        entries = entries_source.get('entries') or []
+        timeline_data = {}
+        for entry in entries:
+            try:
+                dparsed = TwitterManager.parse_twit_data_one(entry)
+            except Exception:
+                # skip malformed entry
+                continue
+            # dparsed: tweet_id, entry_type, tweet_data, user_info
+            if not dparsed or len(dparsed) < 3 or dparsed[2] is None:
                 continue
             timeline_data[dparsed[0]] = dparsed[2]
+
         return timeline_data
         
     @staticmethod
@@ -238,6 +283,8 @@ class TwitterManager():
         '''
         :return: tweet_id, entry_type, parsed_data_list
         '''
+        logger.info('>>>>>>>>>>>>> parse_twit_data_one: {}'.format(data))
+        
         tweet_id = data['entryId']
         content = data['content']
         entry_type = content['entryType']
