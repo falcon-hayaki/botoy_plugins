@@ -186,6 +186,10 @@ class TwitterManager():
     
     @staticmethod
     def parse_user_result(user_result):
+        # -------------> DEBUG <-------------
+        logger.info(f'>>>>>> Debug twitter parse_user_result')
+        logger.info(f'user_result: {user_result}')
+        # -------------> DEBUG <-------------
         legacy = user_result['legacy']
         user_info = dict(
             id=user_result['rest_id'],

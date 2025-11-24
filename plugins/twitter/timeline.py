@@ -63,12 +63,6 @@ async def timeline():
                                 logger.error("get_user_info json decode failed (update), uid=%s status=%s text=%s", uid, getattr(resp, 'status_code', None), getattr(resp, 'text', repr(resp)))
                                 raise
                             user_info = tm.parse_user_info(user_info_json)
-
-                            # -------------> DEBUG <-------------
-                            logger.info(f'>>>>>> Debug twitter timeline for uid: {uid}')
-                            logger.info(f'user_info_json: {user_info_json}')
-                            logger.info(f'user_info: {user_info}')
-                            # -------------> DEBUG <-------------
                             
                             if user_info is None:
                                 logger.error(f"Failed to parse user info for uid: {uid}. API response might be invalid or user does not exist.")
