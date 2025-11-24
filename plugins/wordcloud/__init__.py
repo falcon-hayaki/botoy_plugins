@@ -58,6 +58,7 @@ async def gen_wordcloud():
                     mask = np.array(Image.open(join(resource_path, f'masks/{random.choice(files)}')))
                     colors = ImageColorGenerator(mask)
                 
+                jieba.enable_paddle()
                 for group_id in group_enable:
                     # if group_id != 723979982:
                     #     continue
@@ -70,12 +71,11 @@ async def gen_wordcloud():
                                 text = text.strip()
                                 if text:
                                     # 分词
-                                    # jieba.enable_paddle():
-                                    # jbc = list(jieba.cut(text, use_paddle=True))
-                                    # words = [word for word in jbc if word not in stopwords]
-                                    # word_list.extend(words)
+                                    jbc = list(jieba.cut(text, use_paddle=True))
+                                    words = [word for word in jbc if word not in stopwords]
+                                    word_list.extend(words)
                                     # 不分词
-                                    word_list.append(text)
+                                    # word_list.append(text)
                             if not word_list:
                                 t = '本日你群一句正经话没有，服了'
                                 await action.sendGroupText(group=group_id, text=t)
