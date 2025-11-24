@@ -62,7 +62,7 @@ async def gen_wordcloud():
                     mask = np.array(Image.open(join(resource_path, f'masks/{random.choice(files)}')))
                     colors = ImageColorGenerator(mask)
                 
-                jieba.enable_paddle()
+                # jieba.enable_paddle()
                 for group_id in group_enable:
                     # if group_id != 723979982:
                     #     continue
