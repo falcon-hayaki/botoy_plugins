@@ -144,7 +144,7 @@ async def timeline():
                                 for t in deleted_tweets:
                                     del data[uid]['timeline'][t]
                                 await fileio.write_json(join(resource_path, 'data.json'), data)
-                        await asyncio.sleep(5)
+                        await asyncio.sleep(10)
                     except Exception as e:
                         logger.exception(f'twitter tl scheduler error uid: {uid}')
                         t = f'twitter tl scheduler error\nuid: {uid}\ntraceback: {traceback.format_exc()}'
