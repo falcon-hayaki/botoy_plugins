@@ -873,7 +873,7 @@ def generate_image_with_text(
     # 获取高亮颜色（如果是特定角色）
     highlight_args = {}
     if character_name == "anan":
-        highlight_args = {"bracket_.color": (159, 145, 251)}
+        highlight_args = {"bracket_color": (159, 145, 251)}
     
     emoji_image_dir = os.path.join(base_dir, "imgs", "emoji_png")
 
