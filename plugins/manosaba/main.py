@@ -2,6 +2,9 @@ import os
 import re
 import random
 
+import logging
+logger = logging.getLogger(__name__)
+
 from botoy import ctx, S, file_to_base64
 
 # 插件资源路径
@@ -55,4 +58,4 @@ async def manosaba_command():
         except Exception as e:
             # pass
             # await S.text(f"生成失败: {e}")
-            print(e)
+            logger.exception(f'monoaba error')
