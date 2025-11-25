@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 from botoy import ctx, S, file_to_base64
 
 # 插件资源路径
-resource_path = 'resources/hanayori_fortune'
+resource_path = 'resources/manosaba'
 from .manosaba_plugin import (
     generate_image_with_text,
     get_character_id_by_nickname,
