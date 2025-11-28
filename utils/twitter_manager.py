@@ -235,6 +235,10 @@ class TwitterManager:
     @staticmethod
     def parse_twit_data_one(data: Dict) -> Optional[tuple]:
         tweet_id = data.get('entryId')
+        # 跳过广告、who_to_follow等非tweet条目
+        if not tweet_id or not tweet_id.startswith('tweet-'):
+            return None
+        
         content = data.get('content', {})
         entry_type = content.get('entryType')
 

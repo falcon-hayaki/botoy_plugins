@@ -13,6 +13,7 @@ from .manosaba_plugin import (
     generate_image_with_text,
     get_character_id_by_nickname,
     get_random_expression,
+    get_available_characters,
 )
 
 async def manosaba_command():
@@ -26,7 +27,10 @@ async def manosaba_command():
         if not text:
             return
 
-        character_id = get_character_id_by_nickname(nickname)
+        if nickname in ['随机', '随便', '任意', 'random']:
+            character_id = random.choice(get_available_characters())
+        else:
+            character_id = get_character_id_by_nickname(nickname)
         if not character_id:
             return
 
