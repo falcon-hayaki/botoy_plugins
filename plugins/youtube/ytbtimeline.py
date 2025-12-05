@@ -50,64 +50,94 @@ async def ytbtimeline():
                         if code != 0:
                             raise ValueError(f'check_live_stream error: {uid} {live_info}')
                         
+                        messages_to_send = []
+                        data_changed = False
+                        
                         if 'live_status' in data[uid] and isinstance(data[uid]['live_status'], dict):
                             if not data[uid]['live_status'].get('live', None):
                                 data[uid]['live_status']['live'] = {}
                             if not data[uid]['live_status'].get('upcoming', None):
                                 data[uid]['live_status']['upcoming'] = {}
-                                
+                            
+                            # new live stream
                             for lid, ldata in live_info['live'].items():
                                 if lid not in data[uid]['live_status']['live']:
                                     data[uid]['live_status']['live'][lid] = ldata
+                                    data_changed = True
                                     t = f"{ldata['name']}开播了\n"
                                     t += f"标题: {ldata['title']}\n"
                                     actualStartTime = parser.parse(ldata['liveStreamingDetails']['actualStartTime']).astimezone(SHA_TZ)
                                     t += f"开始时间: {actualStartTime.strftime('%Y-%m-%d %H:%M:%S %Z')}\n"
                                     imgs = ldata['thumbnail']
-                                    for group in subscribes[uid]['groups']:
-                                        await action.sendGroupPic(group=group, text=t, url=imgs)
-                                    await fileio.write_json(join(resource_path, "data.json"), data)
+                                    messages_to_send.append(dict(
+                                        type='pic',
+                                        text=t,
+                                        url=imgs,
+                                        groups=subscribes[uid]['groups']
+                                    ))
                                 if lid in data[uid]['live_status']['upcoming']:
                                     del data[uid]['live_status']['upcoming'][lid]
+                                    data_changed = True
+
+                            # new upcoming stream
                             for lid, ldata in live_info['upcoming'].items():
-                                # NOTE: 遇到未知问题，先跳过
                                 if 'scheduledStartTime' not in ldata['liveStreamingDetails']:
-                                    # logger.warning("missing scheduledStartTime for uid=%s video_ids=%s live_info=%s", uid, video_ids, live_info)
                                     continue
                                 if lid not in data[uid]['live_status']['upcoming']:
-                                    data[uid]['live_status']['upcoming'][lid] = ldata
-                                    t = f"{ldata['name']}设置了一个直播预约\n"
-                                    t += f"标题: {ldata['title']}\n"
                                     scheduledStartTime = parser.parse(ldata['liveStreamingDetails']['scheduledStartTime']).astimezone(SHA_TZ)
                                     if scheduledStartTime.replace(tzinfo=None) < now:
                                         continue
+                                    data[uid]['live_status']['upcoming'][lid] = ldata
+                                    data_changed = True
+                                    t = f"{ldata['name']}设置了一个直播预约\n"
+                                    t += f"标题: {ldata['title']}\n"
                                     t += f"开始时间: {scheduledStartTime.strftime('%Y-%m-%d %H:%M:%S %Z')}\n"
                                     imgs = ldata['thumbnail']
-                                    for group in subscribes[uid]['groups']:
-                                        await action.sendGroupPic(group=group, text=t, url=imgs)
-                                    await fileio.write_json(join(resource_path, "data.json"), data)
+                                    messages_to_send.append(dict(
+                                        type='pic',
+                                        text=t,
+                                        url=imgs,
+                                        groups=subscribes[uid]['groups']
+                                    ))
                             
+                            # ended stream
                             ldid_to_pop = []
                             for ldid, lddata in data[uid]['live_status']['live'].items():
                                 if ldid not in live_info['live']:
                                     ldid_to_pop.append(ldid)
                                     t = f"{lddata['name']}下播了"
-                                    for group in subscribes[uid]['groups']:
-                                        await action.sendGroupText(group=group, text=t)
-                                    await fileio.write_json(join(resource_path, "data.json"), data)
-                            for ltp in ldid_to_pop:
-                                data[uid]['live_status']['live'].pop(ltp)
-                            await fileio.write_json(join(resource_path, "data.json"), data)
+                                    messages_to_send.append(dict(
+                                        type='text',
+                                        text=t,
+                                        groups=subscribes[uid]['groups']
+                                    ))
+                            if ldid_to_pop:
+                                data_changed = True
+                                for ltp in ldid_to_pop:
+                                    data[uid]['live_status']['live'].pop(ltp)
+                            
+                            # remove outdated upcoming streams
                             ldid_to_pop = []
                             for ldid, lddata in data[uid]['live_status']['upcoming'].items():
                                 if 'scheduledStartTime' not in lddata['liveStreamingDetails'] or now > parser.parse(lddata['liveStreamingDetails']['scheduledStartTime']).replace(tzinfo=None):
                                     ldid_to_pop.append(ldid)
-                            for ltp in ldid_to_pop:
-                                data[uid]['live_status']['upcoming'].pop(ltp)
-                            await fileio.write_json(join(resource_path, "data.json"), data)
+                            if ldid_to_pop:
+                                data_changed = True
+                                for ltp in ldid_to_pop:
+                                    data[uid]['live_status']['upcoming'].pop(ltp)
                         else:
                             data[uid]['live_status'] = copy.copy(live_info)
-                        await fileio.write_json(join(resource_path, "data.json"), data)
+                            data_changed = True
+                        
+                        if data_changed:
+                            await fileio.write_json(join(resource_path, "data.json"), data)
+                        
+                        for msg in messages_to_send:
+                            for group in msg['groups']:
+                                if msg['type'] == 'pic':
+                                    await action.sendGroupPic(group=group, text=msg['text'], url=msg['url'])
+                                else:
+                                    await action.sendGroupText(group=group, text=msg['text'])
                         await asyncio.sleep(5)
                     except Exception as e:
                         # 达到api配置限额
