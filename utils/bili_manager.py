@@ -140,7 +140,7 @@ class BiliManager:
         modules = dynamic_raw.get('modules', {})
         module_author = modules.get('module_author', {})
         pub_ts = module_author.get('pub_ts')
-        public_time = datetime.fromtimestamp(pub_ts) if pub_ts else None
+        public_time = datetime.fromtimestamp(int(pub_ts)) if pub_ts else None
 
         dynamic_parsed = {
             'text': (

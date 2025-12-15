@@ -19,6 +19,14 @@ lock = asyncio.Lock()
 crontab = croniter('*/5 * * * *', beijingnow())
 crontab_next = crontab.get_next(datetime)
 
+# API频率控制：
+# - 周期：5分钟（300秒）
+# - 每uid调用数：2次（get_user_info + get_user_timeline）
+# - uid间隔：10秒
+# - 公式：频率(次/分钟) = (2N) / (300 + 10N) * 60
+# - 安全范围：可支持20个uid @ ~4.8次/分钟
+# - 异常恢复：60秒间隔防止429速率限制
+
 async def timeline():
     global lock, crontab, crontab_next, resource_path
     if msg := ctx.g and not lock.locked():
@@ -149,7 +157,7 @@ async def timeline():
                         logger.exception(f'twitter tl scheduler error uid: {uid}')
                         t = f'twitter tl scheduler error\nuid: {uid}\ntraceback: {traceback.format_exc()}'
                         await action.sendGroupText(group=1014696092, text=t)
-                        await asyncio.sleep(300)
+                        await asyncio.sleep(60)
                         
                 data = await fileio.read_json(join(resource_path, "data.json"))
                 uid_to_del = []
