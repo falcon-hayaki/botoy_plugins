@@ -89,7 +89,7 @@ async def bili_dynamic_timeline():
                             new_dynamics = [t for t in dynamic_id_list if t not in data[uid]['dynamic_id_list']]
                             for ndyid in new_dynamics:
                                 ndy = dynamic_data[ndyid]
-                                created_at = datetime.fromtimestamp(ndy['time'], SHA_TZ)
+                                created_at = datetime.fromtimestamp(int(ndy['time']), SHA_TZ)
                                 # 超过10分钟的推默认超时, 不再处理
                                 now = datetime.now(SHA_TZ)
                                 if now - created_at > timedelta(minutes=10):

@@ -27,7 +27,7 @@ async def get_video_info():
                 return
             try:
                 video_info = bm.parse_video_info(bm.get_video_info(bv).json())
-                t = f"{video_info['up']}发布于{datetime.fromtimestamp(video_info['pubdate']).strftime('%Y-%m-%d %H:%M:%S%z')}\n"
+                t = f"{video_info['up']}发布于{datetime.fromtimestamp(int(video_info['pubdate'])).strftime('%Y-%m-%d %H:%M:%S%z')}\n"
                 t += f"标题：{video_info['title']}\n"
                 t += f"简介：{video_info['desc']}\n"
                 t += f"观看数：{video_info['view']}\t"
