@@ -7,5 +7,5 @@ if jconfig.get('bilibili.cookie'):
     from .timeline import bili_dynamic_timeline
     from .get_video_info import get_video_info
     
-    # mark_recv(bili_dynamic_timeline)
+    mark_recv(bili_dynamic_timeline)
     mark_recv(get_video_info)
