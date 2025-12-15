@@ -156,7 +156,11 @@ async def timeline():
                     except Exception as e:
                         logger.exception(f'twitter tl scheduler error uid: {uid}')
                         t = f'twitter tl scheduler error\nuid: {uid}\ntraceback: {traceback.format_exc()}'
-                        await action.sendGroupText(group=1014696092, text=t)
+                        # text过长可能发送失败，改为简单提示
+                        try: 
+                            await action.sendGroupText(group=1014696092, text=t)
+                        except:
+                            await action.sendGroupText(group=1014696092, text=f'twitter tl scheduler error\nuid: {uid}')
                         await asyncio.sleep(60)
                         
                 data = await fileio.read_json(join(resource_path, "data.json"))
