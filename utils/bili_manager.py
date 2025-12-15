@@ -315,9 +315,9 @@ if __name__ == '__main__':
     }
     bm = BiliManager(config=local_config)
     # print(bm.get_live_info(591194).json())
-    print(bm.get_dynamic_list(1755331).json())
-    # with open('test.json', 'w') as f:
-    #     json.dump(bm.get_dynamic_list(1755331).json(), f, ensure_ascii=False)
+    # print(bm.get_dynamic_list(1755331).json())
+    with open('test.json', 'w') as f:
+        json.dump(bm.get_dynamic_list(1755331).json(), f, ensure_ascii=False)
     # print(bm.get_user_info(1755331).json())
     # print(bm.get_user_card(1755331).json())
     # print(bm.get_video_info('BV1Ufm4BCETh').json())

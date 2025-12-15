@@ -78,7 +78,10 @@ async def bili_dynamic_timeline():
                                             t = f"{data[uid]['name']}更新了{k}\n从\n{data[uid][k]}\n更改为\n{v}"
                                             await action.sendGroupText(group=group, text=t)
                                     data[uid][k] = v
-                            await fileio.write_json(join(resource_path, "data.json"), data)
+                                    # 在每次更新后立即保存，确保消息发送成功后数据被记录
+                                    await fileio.write_json(join(resource_path, "data.json"), data)
+                            # 再次读取data以获取最新状态，然后处理新动态
+                            data = await fileio.read_json(join(resource_path, "data.json"))
                             timeline_row = bm.get_dynamic_list(uid).json()
                             dynamic_id_list, dynamic_data = bm.parse_timeline(timeline_row)
                             if dynamic_id_list is None:
@@ -90,6 +93,9 @@ async def bili_dynamic_timeline():
                                 # 超过10分钟的推默认超时, 不再处理
                                 now = datetime.now(SHA_TZ)
                                 if now - created_at > timedelta(minutes=10):
+                                    # 标记为已处理，防止重复
+                                    if ndyid not in data[uid]['dynamic_id_list']:
+                                        data[uid]['dynamic_id_list'].append(ndyid)
                                     continue
                                 for group in subscribes[uid]['groups']:
                                     if ndy['unknown_type']:
@@ -101,10 +107,17 @@ async def bili_dynamic_timeline():
                                             await action.sendGroupPic(group=group, text=t, url=ndy['imgs'])
                                         else:
                                             await action.sendGroupText(group=group, text=t)
+                                # 发送消息后立即更新该动态的记录，防止异常时重复发送
+                                if ndyid not in data[uid]['dynamic_id_list']:
+                                    data[uid]['dynamic_id_list'].append(ndyid)
+                                await fileio.write_json(join(resource_path, "data.json"), data)
                             data[uid]['dynamic_id_list'] = dynamic_id_list
                             data[uid]['dynamic_data'] = dynamic_data
                             await fileio.write_json(join(resource_path, "data.json"), data)
-                        await asyncio.sleep(5)
+                        # 调整sleep时间确保API调用频率不超过5次/分钟
+                        # 公式：(3 * uid_count) / (300 + uid_count * sleep_time) * 60 ≤ 5
+                        # 默认12秒可支持~10个uid订阅
+                        await asyncio.sleep(12)
                     except Exception as e:
                         logger.exception(f'bili_dynamic_timeline scheduler error uid: {uid}')
                         t = f'bili_dynamic_timeline scheduler error\nuid: {uid}\ntraceback: {traceback.format_exc()}'
