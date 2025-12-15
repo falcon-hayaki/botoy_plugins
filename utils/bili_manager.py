@@ -1,215 +1,273 @@
-import requests
+__all__ = ["BiliManager"]
+
 import json
+import time
+import urllib.parse
+from datetime import datetime
 from functools import reduce
 from hashlib import md5
-import urllib.parse
-import time
-from datetime import datetime
+from typing import Any, Callable, Dict, List, Optional, Tuple
 
+import requests
 from botoy import jconfig
 
-class BiliManager():
-    def __init__(self, requests_get_fn=None) -> None:
-        '''
-        :param requests_hook: request请求时调用函数的钩子。不传入时使用requests标准库请求
-        '''
+Response = requests.Response
+
+
+class BiliManager:
+    def __init__(
+        self,
+        requests_get_fn: Optional[Callable[..., Response]] = None,
+        config: Optional[Dict[str, Any]] = None
+    ) -> None:
+        """
+        :param requests_get_fn: A hook for the request function. Uses the requests library by default.
+        :param config: A dict of config. Uses the jconfig library by default.
+        """
         self.wbi = Wbi
-        self.__requests_get = requests.get
-        if requests_get_fn is not None:
+        self._requests_get: Callable[..., Response] = requests.get
+        if requests_get_fn:
             self.register_requests_hook(requests_get_fn)
-            
-        # get config
-        bilibili_conf = jconfig.get_configuration('bilibili')
-        # init headers
+
+        if config is None:
+            bilibili_conf = jconfig.get_configuration('bilibili')
+        else:
+            bilibili_conf = config
         self.headers = {
             'Content-Type': 'application/x-www-form-urlencoded',
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:123.0) Gecko/20100101 Firefox/123.0',
-            'Cookie': bilibili_conf.get('cookie')
+            'Cookie': bilibili_conf.get('cookie', ''),
         }
-            
-    def register_requests_hook(self, requests_get_fn):
-        '''
-        注册request请求时调用函数的钩子
-        '''
-        self.__requests_get = requests_get_fn
-    
-    def __get(self, url, params=None):
-        return self.__requests_get(url, headers=self.headers, params=params)
-    
-    def get_nav(self):
-        url = 'https://api.bilibili.com/x/web-interface/nav'
-        return self.__get(url)
-    
-    def get_live_info(self, room_id):
-        url = f'https://api.live.bilibili.com/room/v1/Room/get_info?id={room_id}'
-        return self.__get(url)
-    
-    def get_video_info(self, bvid):
-        url = f'https://api.bilibili.com/x/web-interface/view?bvid={bvid}'
-        return self.__get(url)
-    
-    def get_dynamic_list(self, uid):
-        url = f'https://api.bilibili.com/x/polymer/web-dynamic/v1/feed/space?offset=&host_mid={uid}&timezone_offset=-480&platform=web&features=itemOpusStyle,listOnlyfans,opusBigCover,onlyfansVote&web_location=333.999'
-        return self.__get(url)
-    
-    def get_user_card(self, uid):
-        url = f'https://api.bilibili.com/x/web-interface/card?mid={uid}'
-        return self.__get(url)
-    
-    def get_user_info(self, uid):
-        img_key, sub_key = self.wbi.getWbiKeys(self.get_nav())
-        signed_params = self.wbi.encWbi(
-            params={
-                'mid': uid
-            },
-            img_key=img_key,
-            sub_key=sub_key
-        )
-        url = f'https://api.bilibili.com/x/space/wbi/acc/info?{urllib.parse.urlencode(signed_params)}'
-        return self.__get(url)
-    
-    # ------------------------ 解析返回json ------------------------
-    @staticmethod
-    def parse_user_info(user_info, user_card):
+
+    def register_requests_hook(self, requests_get_fn: Callable[..., Response]) -> None:
+        """Registers a hook for the request function."""
+        self._requests_get = requests_get_fn
+
+    def _get(self, url: str, params: Optional[Dict[str, Any]] = None) -> Response:
+        return self._requests_get(url, headers=self.headers, params=params)
+
+    def get_nav(self) -> Response:
+        """Gets navigation information."""
+        return self._get('https://api.bilibili.com/x/web-interface/nav')
+
+    def get_live_info(self, room_id: int) -> Response:
+        """Gets live room information."""
+        return self._get(f'https://api.live.bilibili.com/room/v1/Room/get_info?id={room_id}')
+
+    def get_video_info(self, bvid: str) -> Response:
+        """Gets video information."""
+        return self._get(f'https://api.bilibili.com/x/web-interface/view?bvid={bvid}')
+
+    def get_dynamic_list(self, uid: int) -> Response:
+        """Gets a list of dynamics for a user."""
+        params = {
+            'host_mid': uid,
+            'offset': '',
+            'timezone_offset': -480,
+            'platform': 'web',
+            'features': 'itemOpusStyle,listOnlyfans,opusBigCover,onlyfansVote',
+            'web_location': '333.999',
+        }
+        return self._get('https://api.bilibili.com/x/polymer/web-dynamic/v1/feed/space', params=params)
+
+    def get_user_card(self, uid: int) -> Response:
+        """Gets a user's card information."""
+        return self._get(f'https://api.bilibili.com/x/web-interface/card?mid={uid}')
+
+    def get_user_info(self, uid: int) -> Response:
+        """Gets a user's information with WBI signature."""
         try:
-            user_result = user_info['data']
-            user_parsed = dict(
-                name=user_result['name'],
-                face=user_result['face'],
-                sign=user_result['sign'],
-                top_photo=user_result['top_photo'],
-                live_status=(user_result.get('live_room') or {}).get('liveStatus'),
-                live_title=(user_result.get('live_room') or {}).get('title'),
-                live_url=(user_result.get('live_room') or {}).get('url'),
-                live_cover=(user_result.get('live_room') or {}).get('cover'),
-                live_text=(user_result.get('live_room') or {}).get('watched_show', {}).get('text_large'),
-            )
-            user_result = user_card['data']
-            user_parsed.update(dict(
-                followers=user_result['follower'],
-                following=user_result['card']['attention'],
-            ))
-            return user_parsed
-        except:
-            raise ValueError(f'user_info: {user_info}')
-        
+            img_key, sub_key = self.wbi.get_wbi_keys(self.get_nav())
+            signed_params = self.wbi.enc_wbi(params={'mid': uid}, img_key=img_key, sub_key=sub_key)
+            url = f'https://api.bilibili.com/x/space/wbi/acc/info?{urllib.parse.urlencode(signed_params)}'
+            return self._get(url)
+        except (KeyError, IndexError) as e:
+            raise ValueError(f"Failed to get WBI keys: {e}")
+
     @staticmethod
-    def parse_timeline(timeline):
+    def parse_user_info(user_info: Dict[str, Any], user_card: Dict[str, Any]) -> Dict[str, Any]:
+        """Parses user information from API responses."""
+        try:
+            user_data = user_info['data']
+            live_room = user_data.get('live_room', {}) or {}
+            user_parsed = {
+                'name': user_data.get('name'),
+                'face': user_data.get('face'),
+                'sign': user_data.get('sign'),
+                'top_photo': user_data.get('top_photo'),
+                'live_status': live_room.get('liveStatus'),
+                'live_title': live_room.get('title'),
+                'live_url': live_room.get('url'),
+                'live_cover': live_room.get('cover'),
+                'live_text': live_room.get('watched_show', {}).get('text_large'),
+            }
+
+            card_data = user_card['data']
+            user_parsed.update({
+                'followers': card_data.get('follower'),
+                'following': card_data.get('card', {}).get('attention'),
+            })
+            return user_parsed
+        except (KeyError, TypeError) as e:
+            raise ValueError(f"Failed to parse user info: {e}, user_info: {user_info}, user_card: {user_card}")
+
+    @staticmethod
+    def parse_timeline(timeline: Dict[str, Any]) -> Tuple[List[str], Dict[str, Dict[str, Any]]]:
+        """Parses a timeline of dynamics."""
         try:
             dynamic_list_raw = timeline['data']['items']
             dynamic_id_list = []
             dynamic_data = {}
             for dr in dynamic_list_raw:
-                dynamic_id, dynamic_parsed = BiliManager.parse_dynamic_one(dr)
-                if dynamic_id:
+                dynamic_id, dynamic_parsed = BiliManager._parse_dynamic_one(dr)
+                if dynamic_id and dynamic_parsed:
                     dynamic_id_list.append(dynamic_id)
                     dynamic_data[dynamic_id] = dynamic_parsed
-        except:
-            raise ValueError(f'timeline: {timeline}')
-        return dynamic_id_list, dynamic_data
-            
+            return dynamic_id_list, dynamic_data
+        except (KeyError, TypeError) as e:
+            raise ValueError(f"Failed to parse timeline: {e}, timeline: {timeline}")
+
     @staticmethod
-    def parse_dynamic_one(dynamic_raw):
-        '''
-        https://github.com/SocialSisterYi/bilibili-API-collect/blob/master/docs/dynamic/all.md#%E8%8E%B7%E5%8F%96%E5%8A%A8%E6%80%81%E5%88%97%E8%A1%A8
-        '''
-        
-        # 跳过置顶
-        modules = dynamic_raw.get('modules', {})
-        if modules.get('module_tag'):
+    def _parse_dynamic_one(dynamic_raw: Dict[str, Any]) -> Tuple[Optional[str], Optional[Dict[str, Any]]]:
+        """Parses a single dynamic item."""
+        if dynamic_raw.get('modules', {}).get('module_tag'):  # Skip pinned dynamics
             return None, None
-        
-        dynamic_id = dynamic_raw['id_str']
-        dynamic_parsed = {
-            'text': '',
-            'time': None,
-            'imgs': [],
-            'links': [],
-            'unknown_type': ''
-        }
-        # NOTE: 公共部分
-        basic = dynamic_raw.get('basic', {})
+
+        dynamic_id = dynamic_raw.get('id_str')
+        if not dynamic_id:
+            return None, None
+
+        modules = dynamic_raw.get('modules', {})
         module_author = modules.get('module_author', {})
-        public_time = datetime.fromtimestamp(module_author.get('pub_ts'))
-        dynamic_parsed['time'] = module_author.get('pub_ts')
-        dynamic_parsed['text'] += f"{module_author.get('name')}{module_author.get('pub_action') or '发布于'}\n{public_time.strftime('%Y-%m-%d %H:%M:%S%z')}\n\n"
-        dynamic_parsed['links'].append(basic.get('jump_url', ''))
-        # NOTE: 分类处理
-        dynamic_type = dynamic_raw['type']
-        module_dynamic = modules.get('module_dynamic', {})
-        # 纯文字动态
-        if dynamic_type in ['DYNAMIC_TYPE_WORD', 'DYNAMIC_TYPE_DRAW']:
-            major = module_dynamic.get('major', {})
-            opus = major.get('opus', {})
-            dynamic_parsed['text'] += opus.get('summary', {}).get('text', '') + '\n'
-            dynamic_parsed['imgs'] = [p.get('url') for p in opus.get('pics')]
-        # 视频动态
-        elif dynamic_type == 'DYNAMIC_TYPE_AV':
-            major = module_dynamic.get('major', {})
-            archive = major.get('archive', {})
-            dynamic_parsed['text'] += f"链接：{archive.get('jump_url', '')}\n"
-            dynamic_parsed['text'] += f"标题：{archive.get('title', '')}\n"
-            dynamic_parsed['text'] += f"时长：{archive.get('duration_text', '')}\n"
-            dynamic_parsed['text'] += f"简介：{archive.get('desc', '')}\n"
-            if cover := archive.get('cover'):
-                dynamic_parsed['imgs'].append(cover)
-        # 转发动态
-        elif dynamic_type == 'DYNAMIC_TYPE_FORWARD':
-            desc = module_dynamic.get('desc', {})
-            dynamic_parsed['text'] += desc.get('text', '') + '\n\n'
-            dynamic_parsed['text'] += '原动态: \n'
-            orig = dynamic_raw.get('orig', {})
-            orig_id, orig_parsed = BiliManager.parse_dynamic_one(orig)
-            if orig_parsed['unknown_type']:
-                dynamic_parsed['text'] += f"未处理的类型：{orig_parsed['unknown_type']}"
-            else:
-                dynamic_parsed['text'] += orig_parsed['text']
-                dynamic_parsed['imgs'] += orig_parsed['imgs']
-                dynamic_parsed['links'] += orig_parsed['links']
-        # 文章动态
-        elif dynamic_type == 'DYNAMIC_TYPE_ARTICLE':
-            major = module_dynamic.get('major', {})
-            opus = major.get('opus', {})
-            dynamic_parsed['text'] += f"标题：{opus.get('title', '')}\n"
-            dynamic_parsed['text'] += f"摘要：{opus.get('summary', {}).get('text')}\n"
-            dynamic_parsed['imgs'] += [p.get('url') for p in opus.get('pics')]
-        # 不作处理的动态
-        ## 直播动态
+        pub_ts = module_author.get('pub_ts')
+        public_time = datetime.fromtimestamp(pub_ts) if pub_ts else None
+
+        dynamic_parsed = {
+            'text': (
+                f"{module_author.get('name', '')}{module_author.get('pub_action', '发布于')}\n"
+                f"{public_time.strftime('%Y-%m-%d %H:%M:%S%z') if public_time else ''}\n\n"
+            ),
+            'time': pub_ts,
+            'imgs': [],
+            'links': [dynamic_raw.get('basic', {}).get('jump_url', '')],
+            'unknown_type': '',
+        }
+
+        dynamic_type = dynamic_raw.get('type')
+        parser = BiliManager._get_dynamic_parser(dynamic_type)
+        if parser:
+            try:
+                parser(dynamic_raw, dynamic_parsed)
+            except (KeyError, TypeError):
+                dynamic_parsed['unknown_type'] = dynamic_type
         elif dynamic_type in ['DYNAMIC_TYPE_LIVE_RCMD']:
             return None, None
-        # 其它动态
         else:
             dynamic_parsed['unknown_type'] = dynamic_type
-        
+
         return dynamic_id, dynamic_parsed
-    
+
     @staticmethod
-    def parse_video_info(video_info_raw):
+    def _get_dynamic_parser(dynamic_type: str) -> Optional[Callable]:
+        """Returns the appropriate parser for a dynamic type."""
+        parsers = {
+            'DYNAMIC_TYPE_WORD': BiliManager._parse_word_dynamic,
+            'DYNAMIC_TYPE_DRAW': BiliManager._parse_draw_dynamic,
+            'DYNAMIC_TYPE_AV': BiliManager._parse_video_dynamic,
+            'DYNAMIC_TYPE_FORWARD': BiliManager._parse_forward_dynamic,
+            'DYNAMIC_TYPE_ARTICLE': BiliManager._parse_article_dynamic,
+        }
+        return parsers.get(dynamic_type)
+
+    @staticmethod
+    def _parse_word_dynamic(dynamic_raw: Dict[str, Any], dynamic_parsed: Dict[str, Any]):
+        """Parses a word-only dynamic."""
+        major = dynamic_raw.get('modules', {}).get('module_dynamic', {}).get('major', {})
+        opus = major.get('opus', {})
+        dynamic_parsed['text'] += opus.get('summary', {}).get('text', '') + '\n'
+
+    @staticmethod
+    def _parse_draw_dynamic(dynamic_raw: Dict[str, Any], dynamic_parsed: Dict[str, Any]):
+        """Parses a draw dynamic."""
+        major = dynamic_raw.get('modules', {}).get('module_dynamic', {}).get('major', {})
+        opus = major.get('opus', {})
+        dynamic_parsed['text'] += opus.get('summary', {}).get('text', '') + '\n'
+        dynamic_parsed['imgs'].extend([p.get('url') for p in opus.get('pics', []) if p.get('url')])
+
+    @staticmethod
+    def _parse_video_dynamic(dynamic_raw: Dict[str, Any], dynamic_parsed: Dict[str, Any]):
+        """Parses a video dynamic."""
+        major = dynamic_raw.get('modules', {}).get('module_dynamic', {}).get('major', {})
+        archive = major.get('archive', {})
+        dynamic_parsed['text'] += (
+            f"链接：{archive.get('jump_url', '')}\n"
+            f"标题：{archive.get('title', '')}\n"
+            f"时长：{archive.get('duration_text', '')}\n"
+            f"简介：{archive.get('desc', '')}\n"
+        )
+        if cover := archive.get('cover'):
+            dynamic_parsed['imgs'].append(cover)
+
+    @staticmethod
+    def _parse_forward_dynamic(dynamic_raw: Dict[str, Any], dynamic_parsed: Dict[str, Any]):
+        """Parses a forward dynamic."""
+        desc = dynamic_raw.get('modules', {}).get('module_dynamic', {}).get('desc', {})
+        dynamic_parsed['text'] += (desc.get('text', '') or '') + '\n\n原动态: \n'
+
+        orig = dynamic_raw.get('orig')
+        if not orig:
+            return
+
+        _, orig_parsed = BiliManager._parse_dynamic_one(orig)
+        if orig_parsed:
+            if orig_parsed.get('unknown_type'):
+                dynamic_parsed['text'] += f"未处理的类型：{orig_parsed['unknown_type']}"
+            else:
+                dynamic_parsed['text'] += orig_parsed.get('text', '')
+                dynamic_parsed['imgs'].extend(orig_parsed.get('imgs', []))
+                dynamic_parsed['links'].extend(orig_parsed.get('links', []))
+
+    @staticmethod
+    def _parse_article_dynamic(dynamic_raw: Dict[str, Any], dynamic_parsed: Dict[str, Any]):
+        """Parses an article dynamic."""
+        major = dynamic_raw.get('modules', {}).get('module_dynamic', {}).get('major', {})
+        opus = major.get('opus', {})
+        dynamic_parsed['text'] += (
+            f"标题：{opus.get('title', '')}\n"
+            f"摘要：{opus.get('summary', {}).get('text', '')}\n"
+        )
+        dynamic_parsed['imgs'].extend([p.get('url') for p in opus.get('pics', []) if p.get('url')])
+
+    @staticmethod
+    def parse_video_info(video_info_raw: Dict[str, Any]) -> Dict[str, Any]:
+        """Parses video information from an API response."""
         try:
             video_res = video_info_raw['data']
-            return dict(
-                title=video_res['title'],
-                pic=video_res['pic'],
-                desc=video_res['desc'],
-                pubdate=video_res['pubdate'],
-                up=video_res['owner']['name'],
-                view=video_res['stat']['view'],
-                danmaku=video_res['stat']['danmaku'],
-                reply=video_res['stat']['reply'],
-                like=video_res['stat']['like'],
-                favorite=video_res['stat']['favorite'],
-                coin=video_res['stat']['coin'],
-                share=video_res['stat']['share'],
-            )
-        except:
-            raise ValueError(f'video_info: {video_info_raw}')
-    
-class Wbi():
-    '''
-    WBI签名。
+            stat = video_res.get('stat', {})
+            return {
+                'title': video_res.get('title'),
+                'pic': video_res.get('pic'),
+                'desc': video_res.get('desc'),
+                'pubdate': video_res.get('pubdate'),
+                'up': video_res.get('owner', {}).get('name'),
+                'view': stat.get('view'),
+                'danmaku': stat.get('danmaku'),
+                'reply': stat.get('reply'),
+                'like': stat.get('like'),
+                'favorite': stat.get('favorite'),
+                'coin': stat.get('coin'),
+                'share': stat.get('share'),
+            }
+        except (KeyError, TypeError) as e:
+            raise ValueError(f"Failed to parse video info: {e}, video_info: {video_info_raw}")
+
+
+class Wbi:
+    """
+    WBI signature.
     https://github.com/SocialSisterYi/bilibili-API-collect/blob/master/docs/misc/sign/wbi.md
-    '''
-    mixinKeyEncTab = [
+    """
+    MIXIN_KEY_ENC_TAB = [
         46, 47, 18, 2, 53, 8, 23, 32, 15, 50, 10, 31, 58, 3, 45, 35, 27, 43, 5, 49,
         33, 9, 42, 19, 29, 28, 14, 39, 12, 38, 41, 13, 37, 48, 7, 16, 24, 55, 40,
         61, 26, 17, 0, 1, 60, 51, 30, 4, 22, 25, 54, 21, 56, 59, 6, 63, 57, 62, 11,
@@ -217,44 +275,49 @@ class Wbi():
     ]
 
     @classmethod
-    def getMixinKey(cls, orig: str):
-        '对 imgKey 和 subKey 进行字符顺序打乱编码'
-        return reduce(lambda s, i: s + orig[i], cls.mixinKeyEncTab, '')[:32]
+    def get_mixin_key(cls, orig: str) -> str:
+        """Disrupt the order of characters in imgKey and subKey for encoding."""
+        return reduce(lambda s, i: s + orig[i], cls.MIXIN_KEY_ENC_TAB, '')[:32]
 
     @classmethod
-    def encWbi(cls, params: dict, img_key: str, sub_key: str):
-        '为请求参数进行 wbi 签名'
-        mixin_key = cls.getMixinKey(img_key + sub_key)
+    def enc_wbi(cls, params: Dict[str, Any], img_key: str, sub_key: str) -> Dict[str, Any]:
+        """Sign the request parameters with WBI."""
+        mixin_key = cls.get_mixin_key(img_key + sub_key)
         curr_time = round(time.time())
-        params['wts'] = curr_time                                   # 添加 wts 字段
-        params = dict(sorted(params.items()))                       # 按照 key 重排参数
-        # 过滤 value 中的 "!'()*" 字符
+        params['wts'] = curr_time
+        params = dict(sorted(params.items()))
+        
+        # Filter out "!'()*" characters from values
         params = {
-            k : ''.join(filter(lambda chr: chr not in "!'()*", str(v)))
-            for k, v 
-            in params.items()
+            k: ''.join(filter(lambda char: char not in "!'()", str(v)))
+            for k, v in params.items()
         }
-        query = urllib.parse.urlencode(params)                      # 序列化参数
-        wbi_sign = md5((query + mixin_key).encode()).hexdigest()    # 计算 w_rid
+        
+        query = urllib.parse.urlencode(params)
+        wbi_sign = md5((query + mixin_key).encode()).hexdigest()
         params['w_rid'] = wbi_sign
         return params
 
     @staticmethod
-    def getWbiKeys(nav_resp):
-        '获取最新的 img_key 和 sub_key'
+    def get_wbi_keys(nav_resp: Response) -> Tuple[str, str]:
+        """Get the latest img_key and sub_key."""
         json_content = nav_resp.json()
         img_url: str = json_content['data']['wbi_img']['img_url']
         sub_url: str = json_content['data']['wbi_img']['sub_url']
         img_key = img_url.rsplit('/', 1)[1].split('.')[0]
         sub_key = sub_url.rsplit('/', 1)[1].split('.')[0]
         return img_key, sub_key
-    
+
 if __name__ == '__main__':
-    bm = BiliManager()
+    # a dict of config
+    local_config = {
+        'cookie': "enable_web_push=DISABLE; home_feed_column=5; browser_resolution=1435-709; buvid_fp=841242c671d7759bb558ab9dfa5163cd; buvid4=1BC7EA8A-2AFD-CA80-C581-B53F0A335B9782428-024081417-ikIgcXCMkzfSQ2SmdyYClw%3D%3D; SESSDATA=0389d879%2C1781275344%2C46fa3%2Ac2CjCiQfqy4LxUkqPGDZ4eQbukM8KmZve2XINEw7cP5196Jjxc7b8YfoeiB0PlVRo6YhoSVnJTVWRmRjlZTlJDYVVIUmlHcm1NWUFoaVpFUFBvZTRQZHZGNVpQYlhmbE03TVFOQ1I5Y1NQZXM4WEFkMjVCUE9SN0FsV29sMnNyb1ZXUEhIOTRtb0ZnIIEC; bili_jct=e426c36e3dc23d99e0206875cb13ffc7; DedeUserID=118970260; DedeUserID__ckMd5=6c0f45d7b2cdbe8d; bp_t_offset_118970260=1146448095538577408; CURRENT_FNVAL=4048; header_theme_version=OPEN; PVID=2; fingerprint=77b1f389623c9f9e573cbcf54e958fe7; buvid_fp_plain=undefined; CURRENT_QUALITY=80; enable_feed_channel=ENABLE; dy_spec_agreed=1; theme-tip-show=SHOWED; theme-avatar-tip-show=SHOWED; buvid3=E33D5192-7863-A46C-6AAB-7803345C091530324infoc; b_nut=1755302130; _uuid=EC956FE3-C9C9-4362-AB19-1021DF364FBCA31356infoc; hit-dyn-v2=1; theme-switch-show=SHOWED; LIVE_BUVID=AUTO4717649425309845; rpdid=0zbfVG8FSO|YSNDmlG5|4DU|3w1VryQt; bili_ticket=eyJhbGciOiJIUzI1NiIsImtpZCI6InMwMyIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NjU5NzAwNTksImlhdCI6MTc2NTcxMDc5OSwicGx0IjotMX0.IZ-f6e8GfLphql52BASD_tH-apL4XaVmylfQt7rz4o8; bili_ticket_expires=1765969999; b_lsid=C9D85CCA_19B1FE20CED; timeMachine=0"
+    }
+    bm = BiliManager(config=local_config)
     # print(bm.get_live_info(591194).json())
-    # print(bm.get_dynamic_list(3493265644980448).json())
-    with open('test.json', 'w') as f:
-        json.dump(bm.get_dynamic_list(3493265644980448).json(), f, ensure_ascii=False)
-    # print(bm.get_user_info(3546626599684797).json())
-    # print(bm.get_user_card(3546626599684797).json())
-    # print(bm.get_video_info('BV1aw411X7hx').json())
+    print(bm.get_dynamic_list(1755331).json())
+    # with open('test.json', 'w') as f:
+    #     json.dump(bm.get_dynamic_list(1755331).json(), f, ensure_ascii=False)
+    # print(bm.get_user_info(1755331).json())
+    # print(bm.get_user_card(1755331).json())
+    # print(bm.get_video_info('BV1Ufm4BCETh').json())
