@@ -161,7 +161,7 @@ async def timeline():
                             await action.sendGroupText(group=1014696092, text=t)
                         except:
                             await action.sendGroupText(group=1014696092, text=f'twitter tl scheduler error\nuid: {uid}')
-                        await asyncio.sleep(60)
+                        await asyncio.sleep(300)
                         
                 data = await fileio.read_json(join(resource_path, "data.json"))
                 uid_to_del = []
