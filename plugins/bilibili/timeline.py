@@ -32,8 +32,8 @@ async def bili_dynamic_timeline():
                         # 初始化用户数据
                         if uid not in data:
                             info = bm.get_user_info(uid).json()
-                            card = bm.get_user_card(uid).json()
-                            user_info = bm.parse_user_info(info, card)
+                            relation = bm.get_user_relation(uid).json()
+                            user_info = bm.parse_user_info(info, relation)
                             data[uid] = copy.deepcopy(user_info)
                             data[uid]['dynamic_id_list'] = []
                             data[uid]['dynamic_data'] = {}

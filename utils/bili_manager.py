@@ -1,6 +1,7 @@
 __all__ = ["BiliManager"]
 
 import json
+import random
 import time
 import urllib.parse
 from datetime import datetime
@@ -35,16 +36,25 @@ class BiliManager:
             bilibili_conf = config
         self.headers = {
             'Content-Type': 'application/x-www-form-urlencoded',
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:123.0) Gecko/20100101 Firefox/123.0',
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:146.0) Gecko/20100101 Firefox/146.0',
             'Cookie': bilibili_conf.get('cookie', ''),
         }
+        self.last_request_time = 0
 
     def register_requests_hook(self, requests_get_fn: Callable[..., Response]) -> None:
         """Registers a hook for the request function."""
         self._requests_get = requests_get_fn
 
     def _get(self, url: str, params: Optional[Dict[str, Any]] = None) -> Response:
-        return self._requests_get(url, headers=self.headers, params=params)
+        now = time.time()
+        cooldown = random.uniform(1, 1.5)
+        if now - self.last_request_time < cooldown:
+            sleep_time = cooldown - (now - self.last_request_time)
+            time.sleep(sleep_time)
+
+        response = self._requests_get(url, headers=self.headers, params=params)
+        self.last_request_time = time.time()
+        return response
 
     def get_nav(self) -> Response:
         """Gets navigation information."""
@@ -71,8 +81,15 @@ class BiliManager:
         return self._get('https://api.bilibili.com/x/polymer/web-dynamic/v1/feed/space', params=params)
 
     def get_user_card(self, uid: int) -> Response:
-        """Gets a user's card information."""
+        """
+        NOTE: 易被风控已弃用
+        Gets a user's card information.
+        """
         return self._get(f'https://api.bilibili.com/x/web-interface/card?mid={uid}')
+    
+    def get_user_relation(self, uid: int) -> Response:
+        """Gets a user's relation information."""
+        return self._get(f'https://api.bilibili.com/x/relation/stat?vmid={uid}')
 
     def get_user_info(self, uid: int) -> Response:
         """Gets a user's information with WBI signature."""
@@ -85,7 +102,7 @@ class BiliManager:
             raise ValueError(f"Failed to get WBI keys: {e}")
 
     @staticmethod
-    def parse_user_info(user_info: Dict[str, Any], user_card: Dict[str, Any]) -> Dict[str, Any]:
+    def parse_user_info(user_info: Dict[str, Any], relation: Dict[str, Any]) -> Dict[str, Any]:
         """Parses user information from API responses."""
         try:
             user_data = user_info['data']
@@ -102,15 +119,14 @@ class BiliManager:
                 'live_text': live_room.get('watched_show', {}).get('text_large'),
             }
 
-            card_data = user_card['data']
+            relation_data = relation['data']
             user_parsed.update({
-                'followers': card_data.get('follower'),
-                'following': card_data.get('card', {}).get('attention'),
+                'followers': relation_data.get('follower'),
+                'following': relation_data.get('following'),
             })
             return user_parsed
         except (KeyError, TypeError) as e:
-            raise ValueError(f"Failed to parse user info: {e}, user_info: {user_info}, user_card: {user_card}")
-
+            raise ValueError(f"Failed to parse user info: {e}, user_info: {user_info}, relation: {relation}")
     @staticmethod
     def parse_timeline(timeline: Dict[str, Any]) -> Tuple[List[str], Dict[str, Dict[str, Any]]]:
         """Parses a timeline of dynamics."""
