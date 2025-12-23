@@ -207,7 +207,7 @@ class BiliManager:
         """Parses a draw dynamic."""
         major = dynamic_raw.get('modules', {}).get('module_dynamic', {}).get('major', {})
         opus = major.get('opus', {})
-        dynamic_parsed['text'] += opus.get('summary', {}).get('text', '') + '\n'
+        dynamic_parsed['text'] += (opus.get('summary', {}) or {}).get('text', '') + '\n'
         dynamic_parsed['imgs'].extend([p.get('url') for p in opus.get('pics', []) if p.get('url')])
 
     @staticmethod
