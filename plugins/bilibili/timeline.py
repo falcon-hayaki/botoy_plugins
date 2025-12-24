@@ -49,34 +49,41 @@ async def bili_dynamic_timeline():
                         else:
                             user_info = bm.parse_user_info(bm.get_user_info(uid).json(), bm.get_user_card(uid).json())
                             for k, v in user_info.items():
+                                # 如果获取到的值为None或空字符串,则不进行更新
+                                if v is None or v == '':
+                                    continue
                                 if v != data[uid][k]:
-                                    for group in subscribes[uid]['groups']:
-                                        if k in ['face', 'top_photo']:
-                                            # NOTE: 同一张图获取到的的cdn地址可能会不同
-                                            new_re_res = re.match('.+\/([a-zA-Z0-9]+)\.(?:jpg|png)', v)
-                                            old_re_res = re.match('.+\/([a-zA-Z0-9]+)\.(?:jpg|png)', data[uid][k])
-                                            if new_re_res and old_re_res and new_re_res.groups()[0] != old_re_res.groups()[0]:
-                                                t = f"{data[uid]['name']}更新了{k}:\n{v}"
-                                                await action.sendGroupPic(group=group, text=t, url=v)
-                                        elif k == 'followers':
-                                            if int(v/1000) > int(data[uid][k]/1000):
-                                                t = f"{data[uid]['name']}粉丝数到达{v}"
-                                                await action.sendGroupText(group=group, text=t)
-                                        # 直播间信息
-                                        elif k.startswith('live_'):
-                                            if k == 'live_status':
-                                                if data[uid][k] is not None and data[uid][k] == 1 and v == 0:
-                                                    t = f"{data[uid]['name']}下播了\n"
-                                                    t += f"本次直播{user_info['live_text']}"
+                                    # 如果旧值为None或空字符串,则不发送消息
+                                    old_value = data[uid][k]
+                                    is_old_value_empty = old_value is None or old_value == ''
+                                    if not is_old_value_empty:
+                                        for group in subscribes[uid]['groups']:
+                                            if k in ['face', 'top_photo']:
+                                                # NOTE: 同一张图获取到的的cdn地址可能会不同
+                                                new_re_res = re.match('.+\/([a-zA-Z0-9]+)\.(?:jpg|png)', v)
+                                                old_re_res = re.match('.+\/([a-zA-Z0-9]+)\.(?:jpg|png)', data[uid][k])
+                                                if new_re_res and old_re_res and new_re_res.groups()[0] != old_re_res.groups()[0]:
+                                                    t = f"{data[uid]['name']}更新了{k}:\n{v}"
+                                                    await action.sendGroupPic(group=group, text=t, url=v)
+                                            elif k == 'followers':
+                                                if int(v/1000) > int(data[uid][k]/1000):
+                                                    t = f"{data[uid]['name']}粉丝数到达{v}"
                                                     await action.sendGroupText(group=group, text=t)
-                                                elif data[uid][k] is not None and data[uid][k] == 0 and v == 1:
-                                                    t = f"{data[uid]['name']}开播了\n"
-                                                    t += f"标题：{user_info['live_title']}\n"
-                                                    t += user_info['live_url']
-                                                    await action.sendGroupPic(group=group, text=t, url=user_info['live_cover'])
-                                        else:
-                                            t = f"{data[uid]['name']}更新了{k}\n从\n{data[uid][k]}\n更改为\n{v}"
-                                            await action.sendGroupText(group=group, text=t)
+                                            # 直播间信息
+                                            elif k.startswith('live_'):
+                                                if k == 'live_status':
+                                                    if data[uid][k] is not None and data[uid][k] == 1 and v == 0:
+                                                        t = f"{data[uid]['name']}下播了\n"
+                                                        t += f"本次直播{user_info['live_text']}"
+                                                        await action.sendGroupText(group=group, text=t)
+                                                    elif data[uid][k] is not None and data[uid][k] == 0 and v == 1:
+                                                        t = f"{data[uid]['name']}开播了\n"
+                                                        t += f"标题：{user_info['live_title']}\n"
+                                                        t += user_info['live_url']
+                                                        await action.sendGroupPic(group=group, text=t, url=user_info['live_cover'])
+                                            else:
+                                                t = f"{data[uid]['name']}更新了{k}\n从\n{data[uid][k]}\n更改为\n{v}"
+                                                await action.sendGroupText(group=group, text=t)
                                     data[uid][k] = v
                                     # 在每次更新后立即保存，确保消息发送成功后数据被记录
                                     await fileio.write_json(join(resource_path, "data.json"), data)
