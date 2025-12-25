@@ -27,7 +27,7 @@ async def debug():
                 await action.sendGroupPic(msg.from_group, text=msg.text, base64=img_base64_list)
             else:
                 # await S.text(msg.text)
-                logger.debug('debug text: %s', str(ctx.data))
+                logger.info('debug text: %s', str(ctx.data))
                 # action.sendGroupText(msg.from_group, msg.text, atUserNick=)
 
 mark_recv(hello)
