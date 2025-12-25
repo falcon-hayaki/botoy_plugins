@@ -15,7 +15,7 @@ os.makedirs(LOG_DIR, exist_ok=True)
 
 # Configure logging to file and console
 logger = logging.getLogger()
-logger.setLevel(logging.INFO)
+logger.setLevel(logging.DEBUG)
 fmt = Formatter("%(asctime)s %(levelname)s:%(name)s: %(message)s")
 
 console_handler = logging.StreamHandler()
