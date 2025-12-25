@@ -1,6 +1,8 @@
 import requests
 import base64
 from botoy import ctx, S, mark_recv, jconfig, action
+import logging
+logger = logging.getLogger(__name__)
 
 from utils.media_processing import download_from_url_and_convert_to_base64
 
@@ -24,8 +26,10 @@ async def debug():
                         img_base64_list.append(img_base64)
                 await action.sendGroupPic(msg.from_group, text=msg.text, base64=img_base64_list)
             else:
-                await S.text(msg.text)
+                # await S.text(msg.text)
+                logger.debug('debug text: %s', str(ctx.data))
+                # action.sendGroupText(msg.from_group, msg.text, atUserNick=)
 
 mark_recv(hello)
-# mark_recv(debug)
+mark_recv(debug)
 
