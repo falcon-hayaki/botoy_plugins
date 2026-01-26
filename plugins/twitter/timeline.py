@@ -16,7 +16,7 @@ from utils.tz import beijingnow, SHA_TZ
 from utils import fileio
 
 lock = asyncio.Lock()
-crontab = croniter('*/5 * * * *', beijingnow())
+crontab = croniter('*/2 * * * *', beijingnow())
 crontab_next = crontab.get_next(datetime)
 
 # API频率控制：
