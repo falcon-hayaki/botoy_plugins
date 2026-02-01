@@ -15,3 +15,6 @@ paddlepaddle
 croniter
 atproto
 google-api-python-client
+bilibili-api-python
+aiohttp
+curl_cffi

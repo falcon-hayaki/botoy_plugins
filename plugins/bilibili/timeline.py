@@ -31,14 +31,14 @@ async def bili_dynamic_timeline():
                         data = await fileio.read_json(join(resource_path, 'data.json'))
                         # 初始化用户数据
                         if uid not in data:
-                            info = bm.get_user_info(uid).json()
-                            relation = bm.get_user_relation(uid).json()
+                            info = await bm.get_user_info(uid)
+                            relation = await bm.get_user_relation(uid)
                             user_info = bm.parse_user_info(info, relation)
                             data[uid] = copy.deepcopy(user_info)
                             data[uid]['dynamic_id_list'] = []
                             data[uid]['dynamic_data'] = {}
                             await fileio.write_json(join(resource_path, "data.json"), data)
-                            timeline_row = bm.get_dynamic_list(uid).json()
+                            timeline_row = await bm.get_dynamic_list(uid)
                             dynamic_id_list, dynamic_data = bm.parse_timeline(timeline_row)
                             if dynamic_id_list is None:
                                 raise ValueError(f'tl value error: {timeline_row}')
@@ -47,7 +47,9 @@ async def bili_dynamic_timeline():
                             await fileio.write_json(join(resource_path, "data.json"), data)
                         # 检查更新
                         else:
-                            user_info = bm.parse_user_info(bm.get_user_info(uid).json(), bm.get_user_card(uid).json())
+                            info = await bm.get_user_info(uid)
+                            relation = await bm.get_user_relation(uid)
+                            user_info = bm.parse_user_info(info, relation)
                             for k, v in user_info.items():
                                 # 如果获取到的值为None或空字符串,则不进行更新
                                 if v is None or v == '':
@@ -89,7 +91,7 @@ async def bili_dynamic_timeline():
                                     await fileio.write_json(join(resource_path, "data.json"), data)
                             # 再次读取data以获取最新状态，然后处理新动态
                             data = await fileio.read_json(join(resource_path, "data.json"))
-                            timeline_row = bm.get_dynamic_list(uid).json()
+                            timeline_row = await bm.get_dynamic_list(uid)
                             dynamic_id_list, dynamic_data = bm.parse_timeline(timeline_row)
                             if dynamic_id_list is None:
                                 raise ValueError(f'tl value error: {timeline_row}')

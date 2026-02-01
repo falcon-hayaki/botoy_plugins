@@ -1,8 +1,11 @@
 from botoy import mark_recv, jconfig
 
 if jconfig.get('bilibili.cookie'):
-    from utils.bili_manager import BiliManager
-    bm = BiliManager()
+    # from utils.bili_manager import BiliManager
+    # bm = BiliManager()
+    # NOTE: use new api
+    from utils.bili_api_manager import BilibiliApiManager
+    bm = BilibiliApiManager()
 
     from .timeline import bili_dynamic_timeline
     from .get_video_info import get_video_info
