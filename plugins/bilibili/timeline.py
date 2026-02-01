@@ -48,6 +48,7 @@ async def bili_dynamic_timeline():
                             await fileio.write_json(join(resource_path, "data.json"), data)
                         # 检查更新
                         else:
+                            user_obj = bm.get_user(uid)
                             info = await bm.get_user_info(user_obj)
                             relation = await bm.get_user_relation(user_obj)
                             user_info = bm.parse_user_info(info, relation)
