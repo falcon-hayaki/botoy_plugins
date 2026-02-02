@@ -4,7 +4,7 @@ from typing import Optional, Dict, Any, List, Tuple
 import asyncio
 from datetime import datetime
 
-from bilibili_api import Credential, video, user, dynamic, live
+from bilibili_api import Credential, video, user
 from botoy import jconfig
 
 
@@ -37,6 +37,10 @@ class BilibiliApiManager:
     async def get_dynamic_list(self, user: user.User, offset: str = "") -> Dict[str, Any]:
         """Gets a list of dynamics for a user."""
         return await user.get_dynamics_new(offset=offset)
+
+    async def get_video_info(self, bvid: str) -> Dict[str, Any]:
+        video_obj = video.Video(bvid=bvid, credential=self.credential)
+        return await video_obj.get_info()
 
     @staticmethod
     def parse_user_info(user_info: Dict[str, Any], relation: Dict[str, Any]) -> Dict[str, Any]:
@@ -238,18 +242,15 @@ if __name__ == "__main__":
         # relation_info = await bm.get_user_relation(user)
         # print(json.dumps(relation_info, indent=4, ensure_ascii=False))
 
-        dynamic_list = await bm.get_dynamic_list(user)
-        with open("test_dynamic.json", "w") as f:
-            json.dump(dynamic_list, f, ensure_ascii=False, indent=4)
+        # dynamic_list = await bm.get_dynamic_list(user)
+        # with open("test_dynamic.json", "w") as f:
+        #     json.dump(dynamic_list, f, ensure_ascii=False, indent=4)
 
-        # user_info = await bm.get_user_info(1755331)
-        # print(json.dumps(user_info, indent=4, ensure_ascii=False))
-
-        # video_info = await bm.get_video_info("BV1Ufm4BCETh")
-        # print(json.dumps(video_info, indent=4, ensure_ascii=False))
+        video_info = await bm.get_video_info("BV1Ufm4BCETh")
+        print(json.dumps(video_info, indent=4, ensure_ascii=False))
         
-        # parsed_video_info = BilibiliApiManager.parse_video_info(video_info)
-        # print(json.dumps(parsed_video_info, indent=4, ensure_ascii=False))
+        parsed_video_info = BilibiliApiManager.parse_video_info(video_info)
+        print(json.dumps(parsed_video_info, indent=4, ensure_ascii=False))
 
 
     asyncio.run(main())
