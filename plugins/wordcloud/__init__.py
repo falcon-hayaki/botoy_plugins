@@ -34,6 +34,52 @@ crontab_next = crontab.get_next(datetime)
 with open(join(resource_path, 'group_enable.json'), 'r') as f:
     group_enable = json.load(f)
 
+# 定义多种现代化的渐变色彩方案
+def get_gradient_color_func(color_scheme='default'):
+    """
+    返回一个颜色函数，用于词云的渐变配色
+    支持多种流行的配色方案
+    """
+    color_schemes = {
+        'sunset': [  # 日落霞光
+            '#FF6B6B', '#FFE66D', '#FF8E53', '#FE4A49', '#F9844A'
+        ],
+        'ocean': [  # 海洋渐变
+            '#00D4FF', '#0099CC', '#0066CC', '#003D99', '#5DADE2'
+        ],
+        'forest': [  # 森林绿意
+            '#2ECC71', '#27AE60', '#1ABC9C', '#16A085', '#52BE80'
+        ],
+        'purple_dream': [  # 紫色梦幻
+            '#9B59B6', '#8E44AD', '#AF7AC5', '#D2B4DE', '#BB8FCE'
+        ],
+        'warm': [  # 温暖橙红
+            '#E74C3C', '#EC7063', '#F39C12', '#F8B739', '#E67E22'
+        ],
+        'cool': [  # 冷色调
+            '#3498DB', '#5DADE2', '#85C1E9', '#AED6F1', '#2980B9'
+        ],
+        'aurora': [  # 极光色
+            '#A29BFE', '#6C5CE7', '#FD79A8', '#FDCB6E', '#00B894'
+        ],
+        'candy': [  # 糖果色
+            '#FF6B9D', '#FFC93C', '#C3BEF7', '#A1EAFB', '#FFB6B9'
+        ]
+    }
+    
+    colors = color_schemes.get(color_scheme, color_schemes['sunset'])
+    
+    def color_func(word=None, font_size=None, position=None, orientation=None, font_path=None, random_state=None):
+        # 根据字体大小选择颜色，大的词用更鲜艳的颜色
+        if font_size:
+            # 归一化字体大小
+            idx = min(int((font_size / 100) * len(colors)), len(colors) - 1)
+        else:
+            idx = random.randint(0, len(colors) - 1)
+        return colors[idx]
+    
+    return color_func
+
 @to_async
 def gen_wordcloud(word_list_str: str, wordcloud_data: dict, img_path: str):
     wordcloud = WordCloud(**wordcloud_data).generate(word_list_str)
@@ -54,12 +100,14 @@ async def gen_wordcloud():
                 t = requests.get('https://raw.githubusercontent.com/hoochanlon/cn_stopwords/main/baidu_stopwords.txt').text.split()
                 content = [line.strip() for line in t]
                 stopwords.update(content)
-                # 随机选取mask
+                
+                # 使用固定的 litchi_newyear mask
                 mask = None
                 colors = None
-                files = [f for f in listdir(join(resource_path, 'masks/')) if isfile(join(resource_path, f'masks/{f}'))]
-                if files:
-                    mask = np.array(Image.open(join(resource_path, f'masks/{random.choice(files)}')))
+                mask_path = join(resource_path, 'masks/litchi_newyear.png')
+                if exists(mask_path):
+                    mask_image = Image.open(mask_path)
+                    mask = np.array(mask_image)
                     colors = ImageColorGenerator(mask)
                 
                 # jieba.enable_paddle()
@@ -110,25 +158,62 @@ async def gen_wordcloud():
                                     await action.sendGroupText(group=group_id, text=t)
                                 else:
                                     word_list_str = " ".join(word_list)
-                                    wordcloud_data = dict(
-                                        background_color="white",
-                                        max_words=2000,
-                                        height=540,
-                                        width=870,
-                                        max_font_size=60,
-                                        stopwords=stopwords,
-                                        # mask=mask,    # 使用图片蒙版
-                                        color_func=colors,
-                                        collocations=False,
-                                        font_path=join(resource_path, 'HarmonyOS.ttf'),
-                                    )
+                                    
+                                    # 使用mask时的优化配置
+                                    if mask is not None:
+                                        # 使用 mask 时的参数配置
+                                        wordcloud_data = dict(
+                                            background_color="white",  # 白色背景更适合展示mask形状
+                                            max_words=5000,  # 使用mask时可以放更多词
+                                            width=2000,  # 根据mask调整尺寸
+                                            height=2000,
+                                            min_font_size=15,  # 稍大的最小字体，确保清晰
+                                            max_font_size=200,  # 更大的字体以填充mask形状
+                                            stopwords=stopwords,
+                                            mask=mask,  # 使用mask
+                                            color_func=colors,  # 从mask图片提取颜色
+                                            collocations=False,
+                                            font_path=join(resource_path, 'HarmonyOS.ttf'),
+                                            relative_scaling=0.4,  # 降低相对缩放，让词语大小分布更均匀
+                                            prefer_horizontal=0.75,  # 更多水平词语，更易读
+                                            margin=1,  # 更紧密的间距以填充mask
+                                            contour_width=2,  # 添加轮廓线宽度
+                                            contour_color='#FF6B6B',  # 轮廓颜色（可选，可以注释掉）
+                                            random_state=None,
+                                        )
+                                        scheme_info = "荔枝新年主题 (Litchi New Year)"
+                                    else:
+                                        # 没有mask时使用渐变色方案
+                                        color_schemes_list = ['sunset', 'ocean', 'forest', 'purple_dream', 
+                                                             'warm', 'cool', 'aurora', 'candy']
+                                        chosen_scheme = random.choice(color_schemes_list)
+                                        color_func = get_gradient_color_func(chosen_scheme)
+                                        
+                                        wordcloud_data = dict(
+                                            background_color="white",
+                                            max_words=3000,
+                                            height=1080,
+                                            width=1920,
+                                            min_font_size=10,
+                                            max_font_size=150,
+                                            stopwords=stopwords,
+                                            color_func=color_func,
+                                            collocations=False,
+                                            font_path=join(resource_path, 'HarmonyOS.ttf'),
+                                            relative_scaling=0.5,
+                                            prefer_horizontal=0.7,
+                                            margin=2,
+                                            random_state=None,
+                                        )
+                                        scheme_info = chosen_scheme
+                                    
                                     img_path = join(resource_path, f'group_wordcloud/{group_id}.png')
                                     
                                     gen_wordcloud_sync(word_list_str, wordcloud_data, img_path)
                                     # await gen_wordcloud(word_list_str, wordcloud_data, img_path)
                                     # await async_run(gen_wordcloud_sync, word_list_str, wordcloud_data, img_path)
                                     
-                                    t = f"[测试版]今日词云已送达\n今日你群共聊了{len(text_list)}句话"
+                                    t = f"📊 今日词云已送达\n🎨 配色方案: {scheme_info}\n💬 今日你群共聊了{len(text_list)}句话"
                                     await action.sendGroupPic(group=group_id, text=t, base64=file_to_base64(img_path))
                                 await fileio.clear_file(file_path)
                                 await asyncio.sleep(10)
