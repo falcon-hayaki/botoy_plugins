@@ -85,7 +85,9 @@ async def ytbtimeline():
                                     continue
                                 if lid not in data[uid]['live_status']['upcoming']:
                                     scheduledStartTime = parser.parse(ldata['liveStreamingDetails']['scheduledStartTime']).astimezone(SHA_TZ)
-                                    if scheduledStartTime.replace(tzinfo=None) < now:
+                                    # 使用带时区的时间进行比较
+                                    now_with_tz = datetime.now(SHA_TZ)
+                                    if scheduledStartTime < now_with_tz:
                                         continue
                                     data[uid]['live_status']['upcoming'][lid] = ldata
                                     data_changed = True
@@ -116,10 +118,12 @@ async def ytbtimeline():
                                 for ltp in ldid_to_pop:
                                     data[uid]['live_status']['live'].pop(ltp)
                             
-                            # remove outdated upcoming streams
+                            # remove upcoming streams that are no longer in the API response
+                            # (they may have gone live or been cancelled)
                             ldid_to_pop = []
-                            for ldid, lddata in data[uid]['live_status']['upcoming'].items():
-                                if 'scheduledStartTime' not in lddata['liveStreamingDetails'] or now > parser.parse(lddata['liveStreamingDetails']['scheduledStartTime']).replace(tzinfo=None):
+                            for ldid in data[uid]['live_status']['upcoming'].keys():
+                                # 只删除API返回中已经不存在的预约（可能已开播或被取消）
+                                if ldid not in live_info['upcoming']:
                                     ldid_to_pop.append(ldid)
                             if ldid_to_pop:
                                 data_changed = True
