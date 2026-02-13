@@ -289,6 +289,6 @@ async def start_scheduler():
     if not _scheduler_started:
         scheduler.start()
         _scheduler_started = True
-        logger.info("词云定时任务已配置: 🧪 测试模式 - 每分钟执行")
+        logger.info("词云定时任务已配置")
 
 mark_recv(start_scheduler)
