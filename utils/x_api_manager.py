@@ -332,9 +332,7 @@ class XAPIManager:
             'location': user.get('location', ''),
             'icon': user.get('profile_image_url', '').replace('_normal', '_400x400'),  # Get higher quality image
             'followers_count': public_metrics.get('followers_count', 0),
-            'following_count': public_metrics.get('following_count', 0),
-            'tweet_count': public_metrics.get('tweet_count', 0),
-            'created_at': user.get('created_at')
+            'following_count': public_metrics.get('following_count', 0)
         }
     
     @staticmethod
