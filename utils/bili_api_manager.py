@@ -61,7 +61,7 @@ class BilibiliApiManager:
             user_parsed.update(
                 {
                     "followers": relation.get("follower"),
-                    "following": relation.get("following"),
+                    # "following": relation.get("following"),
                 }
             )
             return user_parsed
