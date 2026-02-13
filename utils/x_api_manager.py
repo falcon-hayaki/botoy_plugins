@@ -349,7 +349,11 @@ class XAPIManager:
             logger.error(f"No data in response: {response_data}")
             return None
         
-        tweets = response_data['data']
+        tweets_data = response_data['data']
+        if isinstance(tweets_data, dict):
+            tweets = [tweets_data]
+        else:
+            tweets = tweets_data
         includes = response_data.get('includes', {})
         media_map = {m['media_key']: m for m in includes.get('media', [])}
         users_map = {u['id']: u for u in includes.get('users', [])}
