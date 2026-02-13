@@ -137,83 +137,90 @@ async def gen_wordcloud_task():
                 continue
 
             try:
+                text_list = []
                 if exists(file_path):
                     text_list = await fileio.read_lines(file_path)
-                    word_list = []
-                    for text in text_list:
-                        text = text.strip()
-                        if text:
-                            # 分词
-                            # jieba.enable_paddle():
-                            # jbc = list(jieba.cut(text, use_paddle=True))
-                            # words = [word for word in jbc if word not in stopwords]
-                            # word_list.extend(words)
-                            # 不分词
-                            word_list.append(text)
-                    if not word_list:
-                        t = '本日你群一句正经话没有，服了'
-                        await action.sendGroupText(group=group_id, text=t)
+                
+                word_list = []
+                for text in text_list:
+                    text = text.strip()
+                    if text:
+                        # 分词
+                        # jieba.enable_paddle():
+                        # jbc = list(jieba.cut(text, use_paddle=True))
+                        # words = [word for word in jbc if word not in stopwords]
+                        # word_list.extend(words)
+                        # 不分词
+                        word_list.append(text)
+                
+                if not word_list:
+                    t = '本日你群一句正经话没有，服了'
+                    await action.sendGroupText(group=group_id, text=t)
+                else:
+                    word_list_str = " ".join(word_list)
+                    
+                    # 使用mask时的优化配置
+                    if mask is not None:
+                        # 使用 mask 时的参数配置
+                        wordcloud_data = dict(
+                            background_color="white",  # 白色背景更适合展示mask形状
+                            max_words=5000,  # 使用mask时可以放更多词
+                            width=2000,  # 根据mask调整尺寸
+                            height=2000,
+                            min_font_size=15,  # 稍大的最小字体，确保清晰
+                            max_font_size=200,  # 更大的字体以填充mask形状
+                            stopwords=stopwords,
+                            mask=mask,  # 使用mask
+                            color_func=colors,  # 从mask图片提取颜色
+                            collocations=False,
+                            font_path=join(resource_path, 'HarmonyOS.ttf'),
+                            relative_scaling=0.4,  # 降低相对缩放，让词语大小分布更均匀
+                            prefer_horizontal=0.75,  # 更多水平词语，更易读
+                            margin=1,  # 更紧密的间距以填充mask
+                            contour_width=2,  # 添加轮廓线宽度
+                            contour_color='#FF6B6B',  # 轮廓颜色（可选，可以注释掉）
+                            random_state=None,
+                        )
+                        scheme_info = "荔枝新年主题 (Litchi New Year)"
                     else:
-                        word_list_str = " ".join(word_list)
+                        # 没有mask时使用渐变色方案
+                        color_schemes_list = ['sunset', 'ocean', 'forest', 'purple_dream', 
+                                             'warm', 'cool', 'aurora', 'candy']
+                        chosen_scheme = random.choice(color_schemes_list)
+                        color_func = get_gradient_color_func(chosen_scheme)
                         
-                        # 使用mask时的优化配置
-                        if mask is not None:
-                            # 使用 mask 时的参数配置
-                            wordcloud_data = dict(
-                                background_color="white",  # 白色背景更适合展示mask形状
-                                max_words=5000,  # 使用mask时可以放更多词
-                                width=2000,  # 根据mask调整尺寸
-                                height=2000,
-                                min_font_size=15,  # 稍大的最小字体，确保清晰
-                                max_font_size=200,  # 更大的字体以填充mask形状
-                                stopwords=stopwords,
-                                mask=mask,  # 使用mask
-                                color_func=colors,  # 从mask图片提取颜色
-                                collocations=False,
-                                font_path=join(resource_path, 'HarmonyOS.ttf'),
-                                relative_scaling=0.4,  # 降低相对缩放，让词语大小分布更均匀
-                                prefer_horizontal=0.75,  # 更多水平词语，更易读
-                                margin=1,  # 更紧密的间距以填充mask
-                                contour_width=2,  # 添加轮廓线宽度
-                                contour_color='#FF6B6B',  # 轮廓颜色（可选，可以注释掉）
-                                random_state=None,
-                            )
-                            scheme_info = "荔枝新年主题 (Litchi New Year)"
-                        else:
-                            # 没有mask时使用渐变色方案
-                            color_schemes_list = ['sunset', 'ocean', 'forest', 'purple_dream', 
-                                                 'warm', 'cool', 'aurora', 'candy']
-                            chosen_scheme = random.choice(color_schemes_list)
-                            color_func = get_gradient_color_func(chosen_scheme)
-                            
-                            wordcloud_data = dict(
-                                background_color="white",
-                                max_words=3000,
-                                height=1080,
-                                width=1920,
-                                min_font_size=10,
-                                max_font_size=150,
-                                stopwords=stopwords,
-                                color_func=color_func,
-                                collocations=False,
-                                font_path=join(resource_path, 'HarmonyOS.ttf'),
-                                relative_scaling=0.5,
-                                prefer_horizontal=0.7,
-                                margin=2,
-                                random_state=None,
-                            )
-                            scheme_info = chosen_scheme
-                        
-                        img_path = join(resource_path, f'group_wordcloud/{group_id}.png')
-                        
-                        gen_wordcloud_sync(word_list_str, wordcloud_data, img_path)
-                        # await gen_wordcloud(word_list_str, wordcloud_data, img_path)
-                        # await async_run(gen_wordcloud_sync, word_list_str, wordcloud_data, img_path)
-                        
-                        t = f"📊 今日词云已送达\n今日你群共聊了{len(text_list)}句话"
-                        await action.sendGroupPic(group=group_id, text=t, base64=file_to_base64(img_path))
+                        wordcloud_data = dict(
+                            background_color="white",
+                            max_words=3000,
+                            height=1080,
+                            width=1920,
+                            min_font_size=10,
+                            max_font_size=150,
+                            stopwords=stopwords,
+                            color_func=color_func,
+                            collocations=False,
+                            font_path=join(resource_path, 'HarmonyOS.ttf'),
+                            relative_scaling=0.5,
+                            prefer_horizontal=0.7,
+                            margin=2,
+                            random_state=None,
+                        )
+                        scheme_info = chosen_scheme
+                    
+                    img_path = join(resource_path, f'group_wordcloud/{group_id}.png')
+                    
+                    gen_wordcloud_sync(word_list_str, wordcloud_data, img_path)
+                    # await gen_wordcloud(word_list_str, wordcloud_data, img_path)
+                    # await async_run(gen_wordcloud_sync, word_list_str, wordcloud_data, img_path)
+                    
+                    t = f"📊 今日词云已送达\n今日你群共聊了{len(text_list)}句话"
+                    await action.sendGroupPic(group=group_id, text=t, base64=file_to_base64(img_path))
+                
+                # 清空文件（如果存在）
+                if exists(file_path):
                     await fileio.clear_file(file_path)
-                    await asyncio.sleep(10)
+                
+                await asyncio.sleep(10)
             finally:
                 try:
                     if os.path.exists(lock_path):
@@ -252,28 +259,26 @@ async def log_chat():
                 await fileio.addline(join(resource_path, f'chat_history/{msg.from_group}.txt'), msg_text)
 mark_recv(log_chat)
 
+
 # 配置 APScheduler 定时任务
-# 注意: scheduler 需要在事件循环运行后才能启动，所以不能在模块导入时启动
 
 # ========== 测试任务：每分钟执行 ==========
-# 用于测试定时任务是否正常工作
-scheduler.add_job(
-    gen_wordcloud_task,
-    CronTrigger(minute='*'),  # 每分钟执行
-    id='wordcloud_test',
-    name='词云测试(每分钟)',
-    replace_existing=True
-)
-
-# ========== 生产任务：每天 00:15 执行 ==========
-# 测试完成后取消上面的测试任务，启用下面的生产任务
 # scheduler.add_job(
 #     gen_wordcloud_task,
-#     CronTrigger(hour=0, minute=15),  # 每天 00:15
-#     id='wordcloud_daily',
-#     name='每日词云生成',
+#     CronTrigger(minute='*'),  # 每分钟执行
+#     id='wordcloud_test',
+#     name='词云测试(每分钟)',
 #     replace_existing=True
 # )
+
+# ========== 生产任务：每天 00:15 执行 ==========
+scheduler.add_job(
+    gen_wordcloud_task,
+    CronTrigger(hour=0, minute=15),  # 每天 00:15
+    id='wordcloud_daily',
+    name='每日词云生成',
+    replace_existing=True
+)
 
 # 延迟启动 scheduler，直到事件循环运行
 _scheduler_started = False
