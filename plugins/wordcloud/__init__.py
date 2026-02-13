@@ -253,6 +253,7 @@ async def log_chat():
 mark_recv(log_chat)
 
 # 配置 APScheduler 定时任务
+# 注意: scheduler 需要在事件循环运行后才能启动，所以不能在模块导入时启动
 
 # ========== 测试任务：每分钟执行 ==========
 # 用于测试定时任务是否正常工作
@@ -274,6 +275,15 @@ scheduler.add_job(
 #     replace_existing=True
 # )
 
-# 启动调度器
-scheduler.start()
-logger.info("词云定时任务已配置: 🧪 测试模式 - 每分钟执行")
+# 延迟启动 scheduler，直到事件循环运行
+_scheduler_started = False
+
+async def start_scheduler():
+    """在事件循环运行后启动 scheduler"""
+    global _scheduler_started
+    if not _scheduler_started:
+        scheduler.start()
+        _scheduler_started = True
+        logger.info("词云定时任务已配置: 🧪 测试模式 - 每分钟执行")
+
+mark_recv(start_scheduler)
