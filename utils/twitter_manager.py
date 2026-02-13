@@ -107,7 +107,7 @@ class TwitterManager:
 
     # ------------------------ API Methods ------------------------
     def get_user_info(self, user_name: str) -> requests.Response:
-        url = 'https://x.com/i/api/graphql/-oaLodhGbbnzJBACb1kk2Q/UserByScreenName'
+        url = 'https://x.com/i/api/graphql/AWbeRIdkLtqTRN7yL_H8yw/UserByScreenName'
         params = {
             'variables': json.dumps({"screen_name": user_name, "withGrokTranslatedBio": False}),
             'features': json.dumps(self._USER_FEATURES),
@@ -116,7 +116,7 @@ class TwitterManager:
         return self._get(url, params)
 
     def get_user_timeline(self, uid: str) -> requests.Response:
-        url = 'https://x.com/i/api/graphql/lZRf8IC-GTuGxDwcsHW8aw/UserTweets'
+        url = 'https://x.com/i/api/graphql/eApPT8jppbYXlweF_ByTyA/UserTweets'
         params = {
             'variables': json.dumps({
                 "userId": uid, "count": 20, "includePromotedContent": True,
@@ -128,7 +128,7 @@ class TwitterManager:
         return self._get(url, params)
 
     def get_tweet_detail(self, tid: str) -> requests.Response:
-        url = 'https://x.com/i/api/graphql/6QzqakNMdh_YzBAR9SYPkQ/TweetDetail'
+        url = 'https://x.com/i/api/graphql/ooUbmy0T2DmvwfjgARktiQ/TweetDetail'
         params = {
             'variables': json.dumps({
                 "focalTweetId": tid, "referrer": "profile", "with_rux_injections": False, "rankingMode": "Relevance",
