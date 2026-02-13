@@ -274,7 +274,7 @@ mark_recv(log_chat)
 # ========== 生产任务：每天 00:15 执行 ==========
 scheduler.add_job(
     gen_wordcloud_task,
-    CronTrigger(hour=0, minute=15),  # 每天 00:15
+    CronTrigger(hour=0, minute=38, timezone='Asia/Shanghai'),  # 每天 00:15
     id='wordcloud_daily',
     name='每日词云生成',
     replace_existing=True
