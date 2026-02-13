@@ -22,9 +22,9 @@ crontab_next = crontab.get_next(datetime)
 # API频率控制：
 # - 周期：5分钟（300秒）
 # - 每uid调用数：2次（get_user_info + get_user_timeline）
-# - uid间隔：10秒
-# - 公式：频率(次/分钟) = (2N) / (300 + 10N) * 60
-# - 安全范围：可支持20个uid @ ~4.8次/分钟
+# - uid间隔：60秒
+# - 公式：频率(次/分钟) = (2N) / (300 + 60N) * 60
+# - 安全范围：可支持少数uid
 # - 异常恢复：60秒间隔防止429速率限制
 
 async def timeline():
@@ -75,6 +75,7 @@ async def timeline():
                             
                             if user_info is None:
                                 logger.error(f"Failed to parse user info for uid: {uid}. API response might be invalid or user does not exist.")
+                                await asyncio.sleep(60)
                                 continue
 
                             for k, v in user_info.items():
@@ -152,7 +153,7 @@ async def timeline():
                                 for t in deleted_tweets:
                                     del data[uid]['timeline'][t]
                                 await fileio.write_json(join(resource_path, 'data.json'), data)
-                        await asyncio.sleep(10)
+                        await asyncio.sleep(60)
                     except Exception as e:
                         logger.exception(f'twitter tl scheduler error uid: {uid}')
                         t = f'twitter tl scheduler error\nuid: {uid}\ntraceback: {traceback.format_exc()}'

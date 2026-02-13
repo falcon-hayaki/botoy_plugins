@@ -7,8 +7,8 @@ if jconfig.get('twitter.cookie'):
     from .get_tweet import get_tweet
     from .timeline import timeline
     
-    mark_recv(get_tweet)
-    mark_recv(timeline)
+    # mark_recv(get_tweet)
+    # mark_recv(timeline)
 
 if jconfig.get('x_api.bearer_token'):
     from utils.x_api_manager import XAPIManager
