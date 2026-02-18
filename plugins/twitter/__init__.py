@@ -11,10 +11,10 @@ if jconfig.get('twitter.cookie'):
     # mark_recv(timeline)
 
     # Twikit implementation (Alternative)
-    from .get_tweet_by_twikit import get_tweet_by_twikit
-    from .timeline_by_twikit import timeline_by_twikit
-    mark_recv(get_tweet_by_twikit)
-    mark_recv(timeline_by_twikit)
+    # from .get_tweet_by_twikit import get_tweet_by_twikit
+    # from .timeline_by_twikit import timeline_by_twikit
+    # mark_recv(get_tweet_by_twikit)
+    # mark_recv(timeline_by_twikit)
 
 if jconfig.get('x_api.bearer_token'):
     from utils.x_api_manager import XAPIManager
