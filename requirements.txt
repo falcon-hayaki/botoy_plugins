@@ -18,4 +18,5 @@ google-api-python-client
 bilibili-api-python
 aiohttp
 curl_cffi
+httpx>=0.27.0
 twikit==2.3.3
