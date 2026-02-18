@@ -164,19 +164,19 @@ async def gen_wordcloud_task():
                         # 使用 mask 时的参数配置
                         wordcloud_data = dict(
                             background_color="white",  # 白色背景更适合展示mask形状
-                            max_words=5000,  # 使用mask时可以放更多词
-                            width=2000,  # 根据mask调整尺寸
-                            height=2000,
-                            min_font_size=15,  # 稍大的最小字体，确保清晰
-                            max_font_size=200,  # 更大的字体以填充mask形状
+                            max_words=3000,  # 调整为3000，避免过密
+                            # width=2000,  # 使用 mask 时不需要指定 width 和 height
+                            # height=2000,
+                            min_font_size=30,  # 提高最小字体大小，确保在大图上可见
+                            max_font_size=500,  # 提高最大字体大小，增强视觉冲击力
                             stopwords=stopwords,
                             mask=mask,  # 使用mask
                             color_func=colors,  # 从mask图片提取颜色
                             collocations=False,
                             font_path=join(resource_path, 'HarmonyOS.ttf'),
-                            relative_scaling=0.4,  # 降低相对缩放，让词语大小分布更均匀
-                            prefer_horizontal=0.75,  # 更多水平词语，更易读
-                            margin=1,  # 更紧密的间距以填充mask
+                            relative_scaling=0.5,  # 稍微提高缩放比例
+                            prefer_horizontal=0.8,  # 增加水平文本比例
+                            margin=2,  # 稍微增加间距
                             contour_width=2,  # 添加轮廓线宽度
                             contour_color='#FF6B6B',  # 轮廓颜色（可选，可以注释掉）
                             random_state=None,
