@@ -20,7 +20,8 @@ class Draw():
         color = '#F5F5F5'
         image_font_center = (140, 99)
         ttfront = ImageFont.truetype(fontPath['title'], font_size)
-        font_length = ttfront.getsize(title)
+        bbox = ttfront.getbbox(title)
+        font_length = (bbox[2] - bbox[0], bbox[3] - bbox[1])
         draw.text((image_font_center[0]-font_length[0]/2, image_font_center[1]-font_length[1]/2),
                     title, fill=color,font=ttfront)
         # Text rendering
