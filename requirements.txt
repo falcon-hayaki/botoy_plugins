@@ -18,4 +18,4 @@ google-api-python-client
 bilibili-api-python
 aiohttp
 curl_cffi
-twikit==1.7.6
+twikit==1.4.4
