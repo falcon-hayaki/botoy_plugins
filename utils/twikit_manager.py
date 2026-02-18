@@ -82,9 +82,24 @@ class TwikitManager:
             if tweet:
                 return self._parse_tweet(tweet), self._parse_user(tweet.user)
             return None, None
+        except KeyError as e:
+            # twikit 2.3.3 has a known bug where get_tweet_by_id crashes on
+            # KeyError: 'itemContent' when parsing cursor entries in replies.
+            # Fall back to get_tweets_by_ids which uses a different API endpoint.
+            logger.warning(f"get_tweet_by_id KeyError ({e}) for {tweet_id}, trying get_tweets_by_ids fallback")
+            try:
+                tweets = await self.client.get_tweets_by_ids([tweet_id])
+                if tweets:
+                    tweet = tweets[0]
+                    return self._parse_tweet(tweet), self._parse_user(tweet.user)
+                return None, None
+            except Exception as e2:
+                logger.error(f"Fallback also failed for {tweet_id}: {e2}")
+                return None, None
         except Exception as e:
             logger.error(f"Error fetching tweet detail for {tweet_id}: {e}")
             return None, None
+
 
     # ------------------------ Parsers ------------------------
 
