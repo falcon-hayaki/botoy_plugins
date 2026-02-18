@@ -3,13 +3,13 @@ pydantic==1.10.13
 apscheduler
 aiofiles
 numpy
-Pillow==9.5.0
+Pillow
 pytz
 python-dateutil
 requests
 wordcloud
-jinja2==3.0.3
-werkzeug==1.0.1
+jinja2
+werkzeug
 jieba
 paddlepaddle
 croniter
@@ -18,4 +18,4 @@ google-api-python-client
 bilibili-api-python
 aiohttp
 curl_cffi
-twikit==1.4.4
+twikit
