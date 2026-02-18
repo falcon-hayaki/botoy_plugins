@@ -93,14 +93,23 @@ async def timeline_withxapi():
                                     for group in subscribes[username]['groups']:
                                         if k == 'icon':
                                             t = f"{data[username]['name']}更新了{k}\n"
-                                            await action.sendGroupPic(group=group, text=t, url=v)
+                                            try:
+                                                await action.sendGroupPic(group=group, text=t, url=v)
+                                            except Exception:
+                                                logger.exception(f'sendGroupPic failed group={group} k={k}')
                                         elif k == 'followers_count':
                                             if int(v/1000) > int(data[username][k]/1000):
                                                 t = f"{data[username]['name']}粉丝数到达{v}"
-                                                await action.sendGroupText(group=group, text=t)
+                                                try:
+                                                    await action.sendGroupText(group=group, text=t)
+                                                except Exception:
+                                                    logger.exception(f'sendGroupText failed group={group} k={k}')
                                         else:
                                             t = f"{data[username]['name']}更新了{k}\n从\n{data[username][k]}\n更改为\n{v}"
-                                            await action.sendGroupText(group=group, text=t)
+                                            try:
+                                                await action.sendGroupText(group=group, text=t)
+                                            except Exception:
+                                                logger.exception(f'sendGroupText failed group={group} k={k}')
                                     data[username][k] = v
                                     await fileio.write_json(join(resource_path, "data.json"), data)
                             
@@ -166,12 +175,18 @@ async def timeline_withxapi():
                                 
                                 for group in subscribes[username]['groups']:
                                     if imgs:
-                                        await action.sendGroupPic(group=group, text=t, url=imgs)
+                                        try:
+                                            await action.sendGroupPic(group=group, text=t, url=imgs)
+                                        except Exception:
+                                            logger.exception(f'sendGroupPic failed group={group}')
                                     elif videos:
                                         # TODO: 暂无上传视频的接口
                                         pass
                                     else:
-                                        await action.sendGroupText(group=group, text=t)
+                                        try:
+                                            await action.sendGroupText(group=group, text=t)
+                                        except Exception:
+                                            logger.exception(f'sendGroupText failed group={group}')
                                 
                                 data[username]['timeline'][tweet_id] = timeline[tweet_id]
                                 await fileio.write_json(join(resource_path, 'data.json'), data)

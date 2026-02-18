@@ -155,7 +155,10 @@ async def gen_wordcloud_task():
                 
                 if not word_list:
                     t = '本日你群一句正经话没有，服了'
-                    await action.sendGroupText(group=group_id, text=t)
+                    try:
+                        await action.sendGroupText(group=group_id, text=t)
+                    except Exception:
+                        logger.exception(f'sendGroupText failed group={group_id}')
                 else:
                     word_list_str = " ".join(word_list)
                     
@@ -214,7 +217,10 @@ async def gen_wordcloud_task():
                     # await async_run(gen_wordcloud_sync, word_list_str, wordcloud_data, img_path)
                     
                     t = f"📊 今日词云已送达\n今日你群共聊了{len(text_list)}句话"
-                    await action.sendGroupPic(group=group_id, text=t, base64=file_to_base64(img_path))
+                    try:
+                        await action.sendGroupPic(group=group_id, text=t, base64=file_to_base64(img_path))
+                    except Exception:
+                        logger.exception(f'sendGroupPic failed group={group_id}')
                 
                 # 清空文件（如果存在）
                 if exists(file_path):
@@ -230,7 +236,10 @@ async def gen_wordcloud_task():
         except Exception as e:
             logger.exception(f'wordcloud scheduler error group_id: {group_id}')
             t = f'wordcloud scheduler error\ngroup_id: {group_id}\ntraceback: {traceback.format_exc()}'
-            await action.sendGroupText(group=1014696092, text=t)
+            try:
+                await action.sendGroupText(group=1014696092, text=t)
+            except Exception:
+                logger.exception(f'sendGroupText failed group=1014696092')
 
 
 def remove_abstract_content(text:str):

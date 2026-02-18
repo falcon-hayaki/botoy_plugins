@@ -139,9 +139,15 @@ async def ytbtimeline():
                         for msg in messages_to_send:
                             for group in msg['groups']:
                                 if msg['type'] == 'pic':
-                                    await action.sendGroupPic(group=group, text=msg['text'], url=msg['url'])
+                                    try:
+                                        await action.sendGroupPic(group=group, text=msg['text'], url=msg['url'])
+                                    except Exception:
+                                        logger.exception(f'sendGroupPic failed group={group}')
                                 else:
-                                    await action.sendGroupText(group=group, text=msg['text'])
+                                    try:
+                                        await action.sendGroupText(group=group, text=msg['text'])
+                                    except Exception:
+                                        logger.exception(f'sendGroupText failed group={group}')
                         await asyncio.sleep(5)
                     except Exception as e:
                         # 达到api配置限额

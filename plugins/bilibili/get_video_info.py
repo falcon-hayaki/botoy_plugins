@@ -42,5 +42,8 @@ async def get_video_info():
             except Exception as e:
                 logger.exception(f'get_video_info error bv: {bv}')
                 t = f'get_video_info error\bv: {bv}\ntraceback: {traceback.format_exc()}'
-                await action.sendGroupText(group=1014696092, text=t)
+                try:
+                    await action.sendGroupText(group=1014696092, text=t)
+                except Exception:
+                    logger.exception(f'sendGroupText failed group=1014696092')
                 

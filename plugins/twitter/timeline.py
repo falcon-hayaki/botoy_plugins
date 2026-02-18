@@ -86,14 +86,23 @@ async def timeline():
                                     for group in subscribes[uid]['groups']:
                                         if k == 'icon':
                                             t = f"{data[uid]['name']}更新了{k}\n"
-                                            await action.sendGroupPic(group=group, text=t, url=v)
+                                            try:
+                                                await action.sendGroupPic(group=group, text=t, url=v)
+                                            except Exception:
+                                                logger.exception(f'sendGroupPic failed group={group} k={k}')
                                         elif k == 'followers_count':
                                             if int(v/1000) > int(data[uid][k]/1000):
                                                 t = f"{data[uid]['name']}粉丝数到达{v}"
-                                                await action.sendGroupText(group=group, text=t)
+                                                try:
+                                                    await action.sendGroupText(group=group, text=t)
+                                                except Exception:
+                                                    logger.exception(f'sendGroupText failed group={group} k={k}')
                                         else:
                                             t = f"{data[uid]['name']}更新了{k}\n从\n{data[uid][k]}\n更改为\n{v}"
-                                            await action.sendGroupText(group=group, text=t)
+                                            try:
+                                                await action.sendGroupText(group=group, text=t)
+                                            except Exception:
+                                                logger.exception(f'sendGroupText failed group={group} k={k}')
                                     data[uid][k] = v
                                     await fileio.write_json(join(resource_path, "data.json"), data)
                             tl_resp = tm.get_user_timeline(data[uid]['id'])
@@ -138,12 +147,18 @@ async def timeline():
                                     videos = quote_data['data'].get('videos')
                                 for group in subscribes[uid]['groups']:
                                     if imgs:
-                                        await action.sendGroupPic(group=group, text=t, url=imgs)
+                                        try:
+                                            await action.sendGroupPic(group=group, text=t, url=imgs)
+                                        except Exception:
+                                            logger.exception(f'sendGroupPic failed group={group}')
                                     elif videos:
                                         # TODO: 暂无上传视频的接口
                                         pass
                                     else:
-                                        await action.sendGroupText(group=group, text=t)
+                                        try:
+                                            await action.sendGroupText(group=group, text=t)
+                                        except Exception:
+                                            logger.exception(f'sendGroupText failed group={group}')
                                 data[uid]['timeline'][tweet] = timeline[tweet]
                                 await fileio.write_json(join(resource_path, 'data.json'), data)
                             

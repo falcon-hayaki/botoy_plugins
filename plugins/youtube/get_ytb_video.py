@@ -31,6 +31,12 @@ async def get_ytb_video():
                 await S.text(text)
                 t = f'error in get_ytb_video: group={msg.from_group} text={msg.text}\n'
                 t += f'traceback: \n {traceback.format_exc()}'
-                await action.sendGroupText(group=1014696092, text=t)
+                try:
+                    await action.sendGroupText(group=1014696092, text=t)
+                except Exception:
+                    pass
             else:
-                await action.sendGroupPic(group=msg.from_group, text=text, url=imgs)
+                try:
+                    await action.sendGroupPic(group=msg.from_group, text=text, url=imgs)
+                except Exception:
+                    pass

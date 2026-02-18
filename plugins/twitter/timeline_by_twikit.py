@@ -82,14 +82,23 @@ async def timeline_by_twikit():
                                         for group in groups:
                                             if k == 'icon':
                                                 t = f"{user_info['name']}更新了{k}\n"
-                                                await action.sendGroupPic(group=group, text=t, url=v)
+                                                try:
+                                                    await action.sendGroupPic(group=group, text=t, url=v)
+                                                except Exception:
+                                                    logger.exception(f'sendGroupPic failed group={group} k={k}')
                                             elif k == 'followers_count':
                                                 if int(v/1000) > int(old_info.get(k, 0)/1000):
                                                     t = f"{user_info['name']}粉丝数到达{v}"
-                                                    await action.sendGroupText(group=group, text=t)
+                                                    try:
+                                                        await action.sendGroupText(group=group, text=t)
+                                                    except Exception:
+                                                        logger.exception(f'sendGroupText failed group={group} k={k}')
                                             else:
                                                 t = f"{user_info['name']}更新了{k}\n从\n{old_info.get(k)}\n更改为\n{v}"
-                                                await action.sendGroupText(group=group, text=t)
+                                                try:
+                                                    await action.sendGroupText(group=group, text=t)
+                                                except Exception:
+                                                    logger.exception(f'sendGroupText failed group={group} k={k}')
                                         data[screen_name][k] = v
                                         has_update = True
                                 
@@ -192,9 +201,15 @@ async def process_new_tweet(screen_name, user_info, tdata, groups):
             if imgs:
                 # Send first image or all? original code sends 'imgs' which might be list
                 # botoy sendGroupPic usually accepts list or string
-                await action.sendGroupPic(group=group, text=t, url=imgs)
+                try:
+                    await action.sendGroupPic(group=group, text=t, url=imgs)
+                except Exception:
+                    logger.exception(f'sendGroupPic failed group={group}')
             else:
-                await action.sendGroupText(group=group, text=t)
+                try:
+                    await action.sendGroupText(group=group, text=t)
+                except Exception:
+                    logger.exception(f'sendGroupText failed group={group}')
                 
     except Exception:
         logger.exception(f"Error processing tweet {tdata.get('id')}")

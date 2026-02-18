@@ -72,10 +72,19 @@ async def get_tweet_by_twikit():
                     imgs = q_data.get('imgs')
 
                 if imgs:
-                    await action.sendGroupPic(group=msg.from_group, text=text, url=imgs)
+                    try:
+                        await action.sendGroupPic(group=msg.from_group, text=text, url=imgs)
+                    except Exception:
+                        logger.exception(f'sendGroupPic failed group={msg.from_group}')
                 else:
-                    await action.sendGroupText(group=msg.from_group, text=text)
+                    try:
+                        await action.sendGroupText(group=msg.from_group, text=text)
+                    except Exception:
+                        logger.exception(f'sendGroupText failed group={msg.from_group}')
 
             except Exception as e:
                 logger.exception("Error in get_tweet_by_twikit")
-                await action.sendGroupText(group=msg.from_group, text="发生未知错误")
+                try:
+                    await action.sendGroupText(group=msg.from_group, text="发生未知错误")
+                except Exception:
+                    logger.exception(f'sendGroupText failed group={msg.from_group}')

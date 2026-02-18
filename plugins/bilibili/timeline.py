@@ -68,26 +68,41 @@ async def bili_dynamic_timeline():
                                                 old_re_res = re.match('.+\/([a-zA-Z0-9]+)\.(?:jpg|png)', data[uid][k])
                                                 if new_re_res and old_re_res and new_re_res.groups()[0] != old_re_res.groups()[0]:
                                                     t = f"{data[uid]['name']}更新了{k}:\n{v}"
-                                                    await action.sendGroupPic(group=group, text=t, url=v)
+                                                    try:
+                                                        await action.sendGroupPic(group=group, text=t, url=v)
+                                                    except Exception:
+                                                        logger.exception(f'sendGroupPic failed group={group} k={k}')
                                             elif k == 'followers':
                                                 if int(v/1000) > int(data[uid][k]/1000):
                                                     t = f"{data[uid]['name']}粉丝数到达{v}"
-                                                    await action.sendGroupText(group=group, text=t)
+                                                    try:
+                                                        await action.sendGroupText(group=group, text=t)
+                                                    except Exception:
+                                                        logger.exception(f'sendGroupText failed group={group} k={k}')
                                             # 直播间信息
                                             elif k.startswith('live_'):
                                                 if k == 'live_status':
                                                     if data[uid][k] is not None and data[uid][k] == 1 and v == 0:
                                                         t = f"{data[uid]['name']}下播了\n"
                                                         t += f"本次直播{user_info['live_text']}"
-                                                        await action.sendGroupText(group=group, text=t)
+                                                        try:
+                                                            await action.sendGroupText(group=group, text=t)
+                                                        except Exception:
+                                                            logger.exception(f'sendGroupText failed group={group} k={k}')
                                                     elif data[uid][k] is not None and data[uid][k] == 0 and v == 1:
                                                         t = f"{data[uid]['name']}开播了\n"
                                                         t += f"标题：{user_info['live_title']}\n"
                                                         t += user_info['live_url']
-                                                        await action.sendGroupPic(group=group, text=t, url=user_info['live_cover'])
+                                                        try:
+                                                            await action.sendGroupPic(group=group, text=t, url=user_info['live_cover'])
+                                                        except Exception:
+                                                            logger.exception(f'sendGroupPic failed group={group} k={k}')
                                             else:
                                                 t = f"{data[uid]['name']}更新了{k}\n从\n{data[uid][k]}\n更改为\n{v}"
-                                                await action.sendGroupText(group=group, text=t)
+                                                try:
+                                                    await action.sendGroupText(group=group, text=t)
+                                                except Exception:
+                                                    logger.exception(f'sendGroupText failed group={group} k={k}')
                                     data[uid][k] = v
                                     # 在每次更新后立即保存，确保消息发送成功后数据被记录
                                     await fileio.write_json(join(resource_path, "data.json"), data)
@@ -111,13 +126,22 @@ async def bili_dynamic_timeline():
                                 for group in subscribes[uid]['groups']:
                                     if ndy['unknown_type']:
                                         t = f"未处理的动态类型: {ndy['unknown_type']}"
-                                        await action.sendGroupText(group=group, text=t)
+                                        try:
+                                            await action.sendGroupText(group=group, text=t)
+                                        except Exception:
+                                            logger.exception(f'sendGroupText failed group={group}')
                                     else:
                                         t = ndy['text'] + '\n' + '\n'.join(ndy['links'])
                                         if ndy['imgs']:
-                                            await action.sendGroupPic(group=group, text=t, url=ndy['imgs'])
+                                            try:
+                                                await action.sendGroupPic(group=group, text=t, url=ndy['imgs'])
+                                            except Exception:
+                                                logger.exception(f'sendGroupPic failed group={group}')
                                         else:
-                                            await action.sendGroupText(group=group, text=t)
+                                            try:
+                                                await action.sendGroupText(group=group, text=t)
+                                            except Exception:
+                                                logger.exception(f'sendGroupText failed group={group}')
                                 # 发送消息后立即更新该动态的记录，防止异常时重复发送
                                 if ndyid not in data[uid]['dynamic_id_list']:
                                     data[uid]['dynamic_id_list'].append(ndyid)
