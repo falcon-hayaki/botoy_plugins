@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 from dateutil import parser
 from botoy import ctx, action, jconfig
 import logging
-from . import tm  # This will be twikit_manager based on implicit request
+
 from utils.twikit_manager import TwikitManager
 from utils.tz import beijingnow, SHA_TZ
 from utils import fileio
@@ -49,7 +49,7 @@ async def timeline_by_twikit():
                             # So between User A's get_user_info and User B's get_user_info.
                             # We can just sleep at end of loop.
                             
-                            user_info = tm.get_user_info(screen_name)
+                            user_info = await tm.get_user_info(screen_name)
                             if not user_info:
                                 logger.error(f"get_user_info failed for {screen_name}")
                                 continue
@@ -64,7 +64,7 @@ async def timeline_by_twikit():
                                 # Let's assume the safe approach is to space out EVERYTHING.
                                 await asyncio.sleep(API_INTERVAL)
                                 
-                                timeline = tm.get_user_timeline(user_info['id'])
+                                timeline = await tm.get_user_timeline(user_info['id'])
                                 if not timeline: # Empty or failed
                                     timeline = {}
                                 
@@ -100,7 +100,7 @@ async def timeline_by_twikit():
                                 # Wait before calling timeline to be safe
                                 await asyncio.sleep(API_INTERVAL)
 
-                                timeline = tm.get_user_timeline(user_info['id'])
+                                timeline = await tm.get_user_timeline(user_info['id'])
                                 if timeline:
                                     # Compare for new tweets
                                     old_timeline = data[screen_name].get('timeline', {})

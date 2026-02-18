@@ -25,26 +25,26 @@ async def get_tweet_by_twikit():
             now = time.time()
             if now - last_call_time < INTERVAL:
                 logger.warning("get_tweet_by_twikit rate limit hit")
-                return 
+                return
 
             re_res = re.match(tweet_url_rule, msg.text.strip())
             tid = re_res.groups()[0]
-            
+
             # Update last call time BEFORE calling to prevent race/spam
             last_call_time = time.time()
-            
+
             try:
-                tdata, user_info = tm.get_tweet_detail(tid)
+                tdata, user_info = await tm.get_tweet_detail(tid)
                 if not tdata or not user_info:
                     return
 
                 imgs = None
                 text = ""
-                
+
                 tweet_type = tdata.get('tweet_type', 'default')
                 try:
                     created_at = parser.parse(tdata['created_at']).astimezone(SHA_TZ)
-                except:
+                except Exception:
                     created_at = "未知时间"
 
                 if tweet_type == 'default':
@@ -56,7 +56,7 @@ async def get_tweet_by_twikit():
                     r_data = retweet_data.get('data', {})
                     try:
                         origin_created_at = parser.parse(r_data.get('created_at')).astimezone(SHA_TZ)
-                    except:
+                    except Exception:
                         origin_created_at = "未知时间"
                     text = f"{user_info['name']}的转推\n转发自:\n{r_user.get('name')}发布于{origin_created_at}\n\n{r_data.get('text')}"
                     imgs = r_data.get('imgs')
@@ -66,11 +66,11 @@ async def get_tweet_by_twikit():
                     q_data = quote_data.get('data', {})
                     try:
                         origin_created_at = parser.parse(q_data.get('created_at')).astimezone(SHA_TZ)
-                    except:
+                    except Exception:
                         origin_created_at = "未知时间"
                     text = f"{user_info['name']}的转推\n发布于{created_at}\n\n{tdata['text']}\n\n转发自:\n{q_user.get('name')}发布于{origin_created_at}\n\n{q_data.get('text')}"
                     imgs = q_data.get('imgs')
-                
+
                 if imgs:
                     await action.sendGroupPic(group=msg.from_group, text=text, url=imgs)
                 else:
